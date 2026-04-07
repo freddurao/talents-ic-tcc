@@ -4,7 +4,7 @@ import auth from '../utils/auth.js';
 export const getAllEmailLists = async (req, res) => {
   try {
     auth.getTokenProperties(req.headers['x-access-token']);
-    const emailList = await repository.getAllEmailLists();
+    const emailList = await repository.getAllEmailList(); // Corrigido nome do método
     res.json(emailList);
   } catch (error) {
     if (!error.auth) res.json({ message: error.message, error: true });
@@ -28,8 +28,8 @@ export const createBulkEmailLists = async (req, res) => {
   try {
     const { isAdmin } = auth.getTokenProperties(req.headers['x-access-token']);
     if (isAdmin) {
-      const emailLists = await repository.createBulkEmailLists(req.body);
-      if (emailLists.length > 0)
+      const result = await repository.createBulkEmailLists(req.body);
+      if (result.count > 0)
         res.json({
           message: 'Listas de email criadas.'
         });
@@ -77,7 +77,7 @@ export const deleteBulkEmailLists = async (req, res) => {
     const { isAdmin } = auth.getTokenProperties(req.headers['x-access-token']);
     if (isAdmin) {
       const result = await repository.deleteBulkEmailLists(req.params.ids.split(','));
-      if (result)
+      if (result.count > 0)
         res.json({
           message: 'Listas de e-mail deletadas.'
         });

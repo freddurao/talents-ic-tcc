@@ -7,7 +7,6 @@ import ProfileRepository from '../repositories/ProfileRepository.js';
 import { inviteMail, recoveryMail } from '../utils/emailSender.js';
 import TokenRepository from '../repositories/TokenRepository.js';
 import crypto from 'crypto';
-import { UserAttrs } from '../models/UserAttrs.js';
 
 dotenv.config();
 
@@ -32,14 +31,14 @@ const checkExistentEmail = async (email) => {
 export const getAllUsers = async (req, res) => {
   try {
     const { isAdmin } = auth.getTokenProperties(req.headers['x-access-token']);
-      if (isAdmin) {
-        const users = await repository.getAllUsers();
-        res.json(users);
-      } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
-    } catch (error) {
-      res.json({ message: error.message, error: true });
-    }
+    if (isAdmin) {
+      const users = await repository.getAllUsers();
+      res.json(users);
+    } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
+  } catch (error) {
+    res.json({ message: error.message, error: true });
   }
+};
 
 export const getUserById = async (req, res) => {
   try {
@@ -47,9 +46,7 @@ export const getUserById = async (req, res) => {
     const user = await repository.getUserById(req.params.id);
     if (user) {
       const profile = await ProfileRepository.getProfileByUserId(user.id);
-      let profileId = -1;
-      if (profile) profileId = profile.id;
-      user.dataValues.profileId = profileId;
+      user.profileId = profile ? profile.id : -1;
       res.json(user);
     } else res.json({ message: 'Usuário não encontrado.', error: true });
   } catch (error) {
@@ -192,12 +189,11 @@ export const passwordRecovery = async (req, res) => {
       const user = await repository.getUserByEmail(email);
       if (user) {
         let random_token = crypto.randomBytes(20).toString('hex');
-        //Try to create a unique token, if not possible try again
         try {
-          await TokenRepository.createToken(user.dataValues.id, random_token);
+          await TokenRepository.createToken(user.id, random_token);
         } catch {
           random_token = crypto.randomBytes(20).toString('hex');
-          await TokenRepository.createToken(user.dataValues.id, random_token);
+          await TokenRepository.createToken(user.id, random_token);
         }
         recoveryMail(email, random_token);
       }
@@ -207,8 +203,8 @@ export const passwordRecovery = async (req, res) => {
       if (received_token) {
         const salt = await bcrypt.genSalt(10);
         password = await bcrypt.hash(password, salt);
-        await repository.updateUser({ [UserAttrs.password]: password }, received_token.dataValues.userId);
-        await TokenRepository.deleteToken(received_token.dataValues.token);
+        await repository.updateUser({ password: password }, received_token.userId);
+        await TokenRepository.deleteToken(received_token.token);
 
         res.sendStatus(200);
       } else throw new Error('invalid token');

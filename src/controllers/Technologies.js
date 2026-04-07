@@ -47,8 +47,8 @@ export const deleteTechnology = async (req, res) => {
 //Create multiple technologies on db at the same request
 export const createBulkTechnologies = async (req, res) => {
   try {
-    const technologies = await repository.createBulkTechnologies(req.body);
-    if (technologies.length > 0)
+    const result = await repository.createBulkTechnologies(req.body);
+    if (result.count > 0)
       res.json({
         message: 'Tecnologias criadas.'
       });

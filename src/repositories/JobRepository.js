@@ -1,86 +1,121 @@
-import Job from '../models/JobModel.js';
-import User_JobRepository from '../repositories/User_JobRepository.js';
-import { JobAttrs } from '../models/JobAttrs.js';
-import { Sequelize } from 'sequelize';
-const { Op } = Sequelize;
+import prisma from '../common/prisma/prisma.js';
 
 const getAllJobs = async (filters, itemsPerPage, pageNumber) => {
-  const jobs = await Job.findAndCountAll({
-    where: filters,
-    offset: (pageNumber - 1) * itemsPerPage || 0,
-    limit: itemsPerPage || undefined
+  const take = itemsPerPage || undefined;
+  const skip = (pageNumber - 1) * itemsPerPage || 0;
+
+  const [jobs, count] = await prisma.$transaction([
+    prisma.job.findMany({
+      where: filters,
+      take,
+      skip
+    }),
+    prisma.job.count({ where: filters })
+  ]);
+
+  return { rows: jobs, count };
+};
+
+const getOnlyJobsToRecommend = async (lista) => {
+  const jobs = await prisma.job.findMany({
+    where: {
+      id: {
+        notIn: lista
+      }
+    }
   });
   return jobs;
 };
 
-const getOnlyJobsToRecommend = async (lista) => {
-  const jobs = await Job.findAll({
-    where: {
-      [JobAttrs.id] :{
-        [Op.notIn]: lista
-      }
-    }
-  })
-  return jobs
-}
-
 const getJobById = async (id) => {
-  const job = await Job.findOne({
+  const job = await prisma.job.findUnique({
     where: {
-      [JobAttrs.id]: id
+      id: Number(id)
     }
   });
   return job;
 };
 
 const createJob = async (body, userId) => {
-  const job = await Job.create(body);
+  const { default: User_JobRepository } = await import('./User_JobRepository.js');
+  
+  const { emailsToSend, userId: bodyUserId, ...jobData } = body;
+  
+  const job = await prisma.job.create({
+    data: {
+      ...jobData,
+      workload: parseFloat(jobData.workload),
+      salary: parseFloat(jobData.salary),
+      startingDate: new Date(jobData.startingDate),
+      endingDate: new Date(jobData.endingDate)
+    }
+  });
+  
   await User_JobRepository.createUser_Job(userId, job.id, true);
   return job;
 };
 
 const updateJob = async (body, id) => {
-  const queryResult = await Job.update(body, {
-    where: {
-      [JobAttrs.id]: id
-    }
-  });
-  if (queryResult[0] === 0) throw new Error('falha na operação.');
-  return queryResult;
+  try {
+    const { emailsToSend, userId: bodyUserId, ...jobData } = body;
+    const dataToUpdate = { ...jobData };
+
+    if (dataToUpdate.workload) dataToUpdate.workload = parseFloat(dataToUpdate.workload);
+    if (dataToUpdate.salary) dataToUpdate.salary = parseFloat(dataToUpdate.salary);
+    if (dataToUpdate.startingDate) dataToUpdate.startingDate = new Date(dataToUpdate.startingDate);
+    if (dataToUpdate.endingDate) dataToUpdate.endingDate = new Date(dataToUpdate.endingDate);
+
+    const queryResult = await prisma.job.update({
+      where: {
+        id: Number(id)
+      },
+      data: dataToUpdate
+    });
+    return [1];
+  } catch (error) {
+    throw new Error('falha na operação.');
+  }
 };
 
 const deleteJob = async (id) => {
-  const queryResult = await Job.destroy({
-    where: {
-      [JobAttrs.id]: id
-    }
-  });
-  if (queryResult === 0) throw new Error('falha na operação.');
-  return queryResult;
+  try {
+    const queryResult = await prisma.job.delete({
+      where: {
+        id: Number(id)
+      }
+    });
+    return 1;
+  } catch (error) {
+    throw new Error('falha na operação.');
+  }
 };
 
 const applyToJob = async (userId, jobId) => {
+  const { default: User_JobRepository } = await import('./User_JobRepository.js');
   return await User_JobRepository.createUser_Job(userId, jobId, false);
 };
 
 const deleteExpiredJobs = async () => {
-  return await Job.destroy({
-    where: Sequelize.where(
-      Sequelize.fn('DATE_ADD', Sequelize.col('createdAt'), Sequelize.literal('INTERVAL 6 MONTH')),
-      {
-        [Op.lt]: Sequelize.literal('NOW()')
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  const result = await prisma.job.deleteMany({
+    where: {
+      createdAt: {
+        lt: sixMonthsAgo
       }
-    )
+    }
   });
+  return result.count;
 };
 
 const countValidJob = async (jobId) => {
-  const count = await Job.count({
+  const count = await prisma.job.count({
     where: {
-      [JobAttrs.endingDate]: {
-        [Op.gte]: Sequelize.literal('NOW()')
+      endingDate: {
+        gte: new Date()
       },
-      [JobAttrs.id]: jobId
+      id: Number(jobId)
     }
   });
   return count;

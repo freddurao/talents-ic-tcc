@@ -1,59 +1,113 @@
-import EmailList from '../models/EmailListModel.js';
-import { EmailListAttrs } from '../models/EmailListAttrs.js';
+import prisma from '../common/prisma/prisma.js';
 
-const createBulkEmailLists = async (body) => {
-  const emailList = await EmailList.bulkCreate(body);
-  return emailList;
-};
+const getAllEmailList = async (itemsPerPage, pageNumber) => {
+  const take = itemsPerPage || undefined;
+  const skip = (pageNumber - 1) * itemsPerPage || 0;
 
-const getAllEmailLists = async () => {
-  const emailLists = await EmailList.findAndCountAll();
-  return emailLists;
+  const [emails, count] = await prisma.$transaction([
+    prisma.emailList.findMany({
+      take,
+      skip
+    }),
+    prisma.emailList.count()
+  ]);
+
+  return { rows: emails, count };
 };
 
 const getEmailListById = async (id) => {
-  const emailList = await EmailList.findOne({
+  const emailList = await prisma.emailList.findUnique({
     where: {
-      [EmailListAttrs.id]: id
+      id: Number(id)
     }
   });
   return emailList;
 };
 
-const updateAllIsActive = async (state) => {
-  if (state) {
-    return await EmailList.update({ isActive: true }, { where: {} });
-  } else {
-    return await EmailList.update({ isActive: false }, { where: {} });
-  }
+const createEmailList = async (body) => {
+  const emailList = await prisma.emailList.create({
+    data: body
+  });
+  return emailList;
+};
+
+const createBulkEmailLists = async (bodies) => {
+  return await prisma.emailList.createMany({
+    data: bodies
+  });
 };
 
 const updateEmailList = async (body, id) => {
-  return await EmailList.update(body, {
-    where: {
-      [EmailListAttrs.id]: id
+  try {
+    await prisma.emailList.update({
+      where: {
+        id: Number(id)
+      },
+      data: body
+    });
+    return [1];
+  } catch (error) {
+    throw new Error('falha na operação.');
+  }
+};
+
+const updateAllIsActive = async (state) => {
+  return await prisma.emailList.updateMany({
+    data: {
+      isActive: state
     }
   });
+};
+
+const deleteEmailList = async (id) => {
+  try {
+    await prisma.emailList.delete({
+      where: {
+        id: Number(id)
+      }
+    });
+    return 1;
+  } catch (error) {
+    throw new Error('falha na operação.');
+  }
 };
 
 const deleteBulkEmailLists = async (ids) => {
-  return await EmailList.destroy({
+  return await prisma.emailList.deleteMany({
     where: {
-      [EmailListAttrs.id]: ids
+      id: {
+        in: ids.map(id => Number(id))
+      }
     }
   });
 };
 
-const countIsActive = async () => {
-  return EmailList.count({ where: { isActive: true } });
+const getEmailByEmail = async (email) => {
+  const email_object = await prisma.emailList.findFirst({
+    where: {
+      email: email
+    }
+  });
+  return email_object;
 };
 
-export default {
+const countIsActive = async () => {
+  return await prisma.emailList.count({
+    where: {
+      isActive: true
+    }
+  });
+};
+
+export default { 
+  getAllEmailList, 
+  getEmailListById, 
+  updateEmailList, 
+  deleteEmailList, 
+  createEmailList, 
   createBulkEmailLists,
-  getAllEmailLists,
-  getEmailListById,
-  updateAllIsActive,
-  updateEmailList,
   deleteBulkEmailLists,
-  countIsActive
+  getEmailByEmail, 
+  countIsActive,
+  updateAllIsActive
 };

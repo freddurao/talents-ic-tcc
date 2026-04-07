@@ -3,6 +3,7 @@ import auth from '../utils/auth.js';
 import { buildProfileWhereClause, buildUserNameWhereClause } from '../utils/filters.js';
 import { recommended_vacancy } from '../utils/vacancyRecommendation.js';
 import JobRepository from '../repositories/JobRepository.js';
+
 //Get all searchable profiles
 export const getAllProfiles = async (req, res) => {
   try {
@@ -37,12 +38,12 @@ export const getProfileById = async (req, res) => {
 export const getOwnPerfil = async (req, res) => {
   try {
     const { userId } = auth.getTokenProperties(req.headers['x-access-token']);
-    const profile = await repository.getProfileByUserId(req.params.id);
+    const profile = await repository.getProfileByUserId(userId);
     if (profile) {
-      if (profile.userId == userId){
-        let bestJobs = []
-        const vagas = await recommended_vacancy(userId, profile.dataValues);
-        if (vagas){
+      if (profile.userId == userId) {
+        let bestJobs = [];
+        const vagas = await recommended_vacancy(userId, profile);
+        if (vagas) {
           bestJobs = await Promise.all(vagas.map(async (i) => await JobRepository.getJobById(i.id)));
         }
         res.json(bestJobs);
@@ -62,7 +63,7 @@ export const updateProfile = async (req, res) => {
       if (profile.userId == userId) {
         auth.checkToken(userId, req.headers['x-access-token']);
         const result = await repository.updateProfile(req.body, req.params.id);
-        if (result[0] == 1)
+        if (result)
           res.json({
             message: 'Perfil atualizado.'
           });
@@ -94,7 +95,7 @@ export const deleteProfile = async (req, res) => {
     const { userId } = auth.getTokenProperties(req.headers['x-access-token']);
     const profile = await repository.getProfileByUserId(userId);
 
-    if (profile.id == req.params.id) {
+    if (profile && profile.id == req.params.id) {
       const result = await repository.deleteProfile(profile.id);
       if (result)
         res.json({

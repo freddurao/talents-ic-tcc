@@ -1,36 +1,85 @@
-import User_JobScore from '../models/User_JobScoreModel.js';
-import { User_JobScoreAttrs } from '../models/User_JobScoreAttrs.js';
+import prisma from '../common/prisma/prisma.js';
 
-const createUser_JobScore = async (userId, jobId, status='neutro') => {
-  const user_job = await User_JobScore.create({
-    [User_JobScoreAttrs.userId]: userId,
-    [User_JobScoreAttrs.jobId]: jobId,
-    [User_JobScoreAttrs.status]: status,
+const createUser_JobScore = async (userId, jobId, status) => {
+  const user_job_score = await prisma.userJobScore.create({
+    data: {
+      userId: Number(userId),
+      jobId: Number(jobId),
+      status: status
+    }
   });
-  return user_job;
+  return user_job_score;
+};
+
+const getInformationByJobIdAndUserId = async (jobId, userId) => {
+  const user_job_score = await prisma.userJobScore.findFirst({
+    where: {
+      jobId: Number(jobId),
+      userId: Number(userId)
+    },
+    include: {
+      job: true,
+      user: {
+        select: {
+          name: true,
+          email: true,
+          isAdmin: true,
+          isAuthorized: true
+        }
+      }
+    }
+  });
+  return user_job_score;
 };
 
 const getUser_JobScoreStatus = async (userId, jobId) => {
-  const status_userjob = await User_JobScore.findOne({
+  const user_job_score = await prisma.userJobScore.findFirst({
     where: {
-      [User_JobScoreAttrs.userId]: userId,
-      [User_JobScoreAttrs.jobId]: jobId
+      userId: Number(userId),
+      jobId: Number(jobId)
     },
-    attributes:{
-      exclude: [User_JobScoreAttrs.userId, User_JobScoreAttrs.jobId]
-    },
-  })
-  return status_userjob
-}
+    select: {
+      id: true,
+      status: true
+    }
+  });
+  return user_job_score;
+};
 
-const updateUser_JobScoreStatus = async (body,userId, jobId) => {
-  const queryResult = await User_JobScore.update(body, {
-    where: {
-      [User_JobScoreAttrs.userId]: userId,
-      [User_JobScoreAttrs.jobId]: jobId,
-    }});
-  if (queryResult[0] === 0) throw new Error('falha na operação.');
-  return queryResult;
-}
+const updateUser_JobScoreStatus = async (body, userId, jobId) => {
+  try {
+    const user_job_score = await prisma.userJobScore.updateMany({
+      where: {
+        userId: Number(userId),
+        jobId: Number(jobId)
+      },
+      data: {
+        status: body.status
+      }
+    });
+    return user_job_score;
+  } catch (error) {
+    throw new Error('falha na operação.');
+  }
+};
 
-export default { createUser_JobScore,  getUser_JobScoreStatus,  updateUser_JobScoreStatus };
+const deleteUser_JobScore = async (id) => {
+  try {
+    await prisma.userJobScore.delete({
+      where: {
+        id: Number(id)
+      }
+    });
+    return 1;
+  } catch (error) {
+    throw new Error('falha na operação.');
+  }
+};
+
+export default { 
+  createUser_JobScore, 
+  getInformationByJobIdAndUserId, 
+  getUser_JobScoreStatus, 
+  updateUser_JobScoreStatus, 
+  deleteUser_JobScore 
+};

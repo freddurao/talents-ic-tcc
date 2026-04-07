@@ -48,8 +48,8 @@ export const deleteSkill = async (req, res) => {
 
 export const createBulkSkills = async (req, res) => {
   try {
-    const skills = await repository.createBulkSkills(req.body);
-    if (skills.length > 0)
+    const result = await repository.createBulkSkills(req.body);
+    if (result.count > 0)
       res.json({
         message: 'Habilidades criadas.'
       });
