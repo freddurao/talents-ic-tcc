@@ -2,12 +2,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY package*.json ./
+COPY prisma ./prisma/
 
-RUN npm ci --omit=dev
+RUN npm install
+
+RUN npx prisma generate
 
 COPY . .
 
 EXPOSE 5001
 
-CMD ["npx", "nodemon", "src/index"]
+CMD ["node", "src/index"]
