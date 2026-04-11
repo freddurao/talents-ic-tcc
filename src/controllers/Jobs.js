@@ -16,9 +16,9 @@ export const getAllJobs = async (req, res) => {
     const itemsPerPage = parseInt(req.query.itemsPerPage);
     const filters = buildJobWhereClause(req);
     const jobs = await repository.getAllJobs(filters, itemsPerPage, pageNumber);
-    res.json(jobs);
+    res.status(200).json(jobs);
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };
 
@@ -27,35 +27,35 @@ export const getJobById = async (req, res) => {
   try {
     const jobInfo = await User_JobRepository.getInformationByJobId(req.params.id);
     const { userId } = auth.getTokenProperties(req.headers['x-access-token']);
-    
+
     if (jobInfo) {
       if (userId == jobInfo.userId) {
         jobInfo['recmd_profiles'] = await recommended_users_to_job(userId, jobInfo.job);
       }
-      res.json(jobInfo);
+      res.status(200).json(jobInfo);
     } else {
-      res.json({ message: 'Vaga não encontrada.', error: true });
+      res.status(404).json({ message: 'Vaga não encontrada.', error: true });
     }
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };
 
 //Create new job
 export const createJob = async (req, res) => {
   try {
-    const userId = req.body.userId;
     auth.checkToken(userId, req.headers['x-access-token']);
+    const userId = req.body.userId;
     const job = await repository.createJob(req.body, userId);
     if (job) {
       emailsListMail(job, req.body.emailsToSend);
-      res.json({
+      res.status(201).json({
         message: 'Vaga criada.'
       });
     } else throw new Error('Falha ao realizar operação.');
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    if (!error.auth) res.status(500).json({ message: error.message, error: true });
+    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
   }
 };
 
@@ -67,13 +67,13 @@ export const updateJob = async (req, res) => {
 
     if ((await User_JobRepository.countUser_JobByJobIdAndUserId(jobId, userId)) || isAdmin) {
       await repository.updateJob(req.body, jobId);
-      return res.json({
+      return res.status(200).json({
         message: 'Vaga atualizada.'
       });
     } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    if (!error.auth) res.status(500).json({ message: error.message, error: true });
+    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
   }
 };
 
@@ -84,13 +84,13 @@ export const getFeedbackStatus = async(req, res) => {
     const result = await User_JobScoreRepository.getUser_JobScoreStatus(userId, jobId);
     
     if (result && result.status) {
-      return res.json(result.status);
+      return res.status(200).json(result.status);
     } else {
       res.status(401).json({message: 'Acesso não autorizado.', error: true, notAuthorized:true});
     }
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    if (!error.auth) res.status(500).json({ message: error.message, error: true });
+    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
   }
 };
 
@@ -104,15 +104,15 @@ export const updateStatusJob = async (req, res) => {
     
     if (exists) {
       await User_JobScoreRepository.updateUser_JobScoreStatus(req.body, userId, jobId);
-      return res.json({
-        message: 'Feedback recebido.'
+      return res.status(204).json({
+        message: 'Status do escore atualizado.'
       });
     } else {
       res.status(401).json({ message: 'Acesso não autorizado.', error: true, notAuthorized: true });
     }
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    if (!error.auth) res.status(500).json({ message: error.message, error: true });
+    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
   }
 };
 
@@ -127,8 +127,8 @@ export const deleteJob = async (req, res) => {
       return res.status(204).json();
     } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    if (!error.auth) res.status(500).json({ message: error.message, error: true });
+    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
   }
 };
 
@@ -138,7 +138,7 @@ export const applyToJob = async (req, res) => {
     const userId = req.body.userId;
     auth.checkToken(userId, req.headers['x-access-token']);
     let count = await ProfileRepository.countProfileByUserId(userId);
-    if (!count) return res.json({ message: 'Necessário criar perfil.', error: true, emptyProfile: true });
+    if (!count) return res.status(400).json({ message: 'Necessário criar perfil.', error: true, emptyProfile: true });
     
     if (!(await repository.countValidJob(req.body.jobId))) throw new Error('Vaga expirada');
     
@@ -150,10 +150,10 @@ export const applyToJob = async (req, res) => {
       const profileUserApplier = await ProfileRepository.getProfileByUserId(userId);
       const jobToApply = infoUserRecvAndJob.job;
       await mail_sender(userApplier, userReceiver, profileUserApplier, jobToApply);
-      res.json({ message: 'Aplicação realizada.' });
+      res.status(200).json({ message: 'Aplicação realizada.' });
     } else throw new Error('Falha ao realizar operação.');
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    if (!error.auth) res.status(500).json({ message: error.message, error: true });
+    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
   }
 };

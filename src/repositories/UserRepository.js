@@ -3,12 +3,8 @@ import prisma from '../common/prisma/prisma.js';
 const getAllUsers = async () => {
   const [users, count] = await prisma.$transaction([
     prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        isAdmin: true,
-        isAuthorized: true
+      omit: {
+        password: true,
       }
     }),
     prisma.user.count()
@@ -39,9 +35,12 @@ const getUserByEmail = async (email) => {
 
 const checkExistentEmail = async (email) => {
   const count = await prisma.user.count({
-    where: { email: email }
+    where: { email }
   });
-  return count;
+
+  if (count > 0) {
+    throw new Error('E-mail já cadastrado.');
+  }
 };
 
 const createUser = async (body) => {

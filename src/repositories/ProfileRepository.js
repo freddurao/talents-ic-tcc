@@ -75,7 +75,7 @@ const updateProfile = async (body, id) => {
       },
       data: dataToUpdate
     });
-    return [1];
+    return result;
   } catch (error) {
     throw new Error('falha na operação.');
   }
@@ -96,12 +96,11 @@ const createProfile = async (body) => {
 
 const deleteProfile = async (id) => {
   try {
-    await prisma.profile.delete({
+    return await prisma.profile.delete({
       where: {
         id: Number(id)
       }
     });
-    return 1;
   } catch (error) {
     throw new Error('falha na operação.');
   }

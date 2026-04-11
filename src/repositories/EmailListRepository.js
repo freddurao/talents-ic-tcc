@@ -16,12 +16,11 @@ const getAllEmailList = async (itemsPerPage, pageNumber) => {
 };
 
 const getEmailListById = async (id) => {
-  const emailList = await prisma.emailList.findUnique({
+  return prisma.emailList.findUnique({
     where: {
       id: Number(id)
     }
   });
-  return emailList;
 };
 
 const createEmailList = async (body) => {
@@ -39,13 +38,12 @@ const createBulkEmailLists = async (bodies) => {
 
 const updateEmailList = async (body, id) => {
   try {
-    await prisma.emailList.update({
+    return await prisma.emailList.update({
       where: {
         id: Number(id)
       },
       data: body
     });
-    return [1];
   } catch (error) {
     throw new Error('falha na operação.');
   }

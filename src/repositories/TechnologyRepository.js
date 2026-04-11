@@ -33,13 +33,12 @@ const createBulkTechnologies = async (bodies) => {
 const updateTechnology = async (body, id) => {
   try {
     const { id: bodyId, ...techData } = body;
-    await prisma.technology.update({
+    return await prisma.technology.update({
       where: {
         id: Number(id)
       },
       data: techData
     });
-    return [1];
   } catch (error) {
     throw new Error('falha na operação.');
   }
@@ -47,12 +46,11 @@ const updateTechnology = async (body, id) => {
 
 const deleteTechnology = async (id) => {
   try {
-    await prisma.technology.delete({
+    return await prisma.technology.delete({
       where: {
         id: Number(id)
       }
     });
-    return 1;
   } catch (error) {
     throw new Error('falha na operação.');
   }

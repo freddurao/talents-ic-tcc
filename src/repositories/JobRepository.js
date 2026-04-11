@@ -65,13 +65,12 @@ const updateJob = async (body, id) => {
     if (dataToUpdate.startingDate) dataToUpdate.startingDate = new Date(dataToUpdate.startingDate);
     if (dataToUpdate.endingDate) dataToUpdate.endingDate = new Date(dataToUpdate.endingDate);
 
-    const queryResult = await prisma.job.update({
+    return await prisma.job.update({
       where: {
         id: Number(id)
       },
       data: dataToUpdate
     });
-    return [1];
   } catch (error) {
     throw new Error('falha na operação.');
   }
@@ -79,12 +78,11 @@ const updateJob = async (body, id) => {
 
 const deleteJob = async (id) => {
   try {
-    const queryResult = await prisma.job.delete({
+    await prisma.job.delete({
       where: {
         id: Number(id)
       }
     });
-    return 1;
   } catch (error) {
     throw new Error('falha na operação.');
   }

@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/mate85-vagas/vagas-backend#readme",
   "dependencies": {
+    "@prisma/adapter-better-sqlite3": "^7.7.0",
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.6.0",
     "bcrypt": "^6.0.0",
@@ -35,7 +36,7 @@
     "node-cron": "^4.2.1",
     "nodemailer": "^8.0.4",
     "pg": "^8.20.0",
-    "sequelize": "^6.37.8",
+    "sqlite3": "^6.0.1",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {

@@ -33,10 +33,10 @@ export const getAllUsers = async (req, res) => {
     const { isAdmin } = auth.getTokenProperties(req.headers['x-access-token']);
     if (isAdmin) {
       const users = await repository.getAllUsers();
-      res.json(users);
+      res.status(200).json(users);
     } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };
 
@@ -47,11 +47,11 @@ export const getUserById = async (req, res) => {
     if (user) {
       const profile = await ProfileRepository.getProfileByUserId(user.id);
       user.profileId = profile ? profile.id : -1;
-      res.json(user);
-    } else res.json({ message: 'Usuário não encontrado.', error: true });
+      res.status(200).json(user);
+    } else res.status(404).json({ message: 'Usuário não encontrado.', error: true });
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    if (!error.auth) res.status(500).json({ message: error.message, error: true });
+    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
   }
 };
 
@@ -62,10 +62,10 @@ export const getCreatedJobsByUser = async (req, res) => {
     const pageNumber = parseInt(req.query.pageNumber);
     const itemsPerPage = parseInt(req.query.itemsPerPage);
     const user_jobs = await User_JobRepository.getJobsByUserId(req.params.id, true, itemsPerPage, pageNumber);
-    res.json(user_jobs);
+    res.status(200).json(user_jobs);
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    if (!error.auth) res.status(500).json({ message: error.message, error: true });
+    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
   }
 };
 
@@ -76,10 +76,10 @@ export const getAppliedJobsByUser = async (req, res) => {
     const pageNumber = parseInt(req.query.pageNumber);
     const itemsPerPage = parseInt(req.query.itemsPerPage);
     const user_jobs = await User_JobRepository.getJobsByUserId(req.params.id, false, itemsPerPage, pageNumber);
-    res.json(user_jobs);
+    res.status(200).json(user_jobs);
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    if (!error.auth) res.status(500).json({ message: error.message, error: true });
+    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
   }
 };
 
@@ -95,12 +95,12 @@ export const createUser = async (req, res) => {
     } else req.body.isAuthorized = true;
     const user = await repository.createUser(req.body);
     const token = auth.createToken(user.id, user.isAdmin);
-    res.json({
+    res.status(201).json({
       id: user.id,
       token: token
     });
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    res.status(400).json({ message: error.message, error: true });
   }
 };
 
@@ -113,7 +113,7 @@ export const authenticate = async (req, res) => {
       if (validPassword) {
         dotenv.config();
         const token = auth.createToken(user.id, user.isAdmin);
-        res.json({
+        res.status(200).json({
           id: user.id,
           token: token
         });
@@ -124,7 +124,7 @@ export const authenticate = async (req, res) => {
       res.status(401).json({ message: 'Acesso negado.', error: true });
     }
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };
 
@@ -144,13 +144,13 @@ export const updateUser = async (req, res) => {
 
     if (req.params.id == userId || isAdmin) {
       await repository.updateUser(req.body, req.params.id);
-      return res.json({
+      return res.status(200).json({
         message: 'usuário atualizado.'
       });
     } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    if (!error.auth) res.status(500).json({ message: error.message, error: true });
+    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
   }
 };
 
@@ -163,8 +163,8 @@ export const deleteUser = async (req, res) => {
       return res.status(204).json();
     } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    if (!error.auth) res.status(500).json({ message: error.message, error: true });
+    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
   }
 };
 
@@ -172,9 +172,9 @@ export const inviteUser = async (req, res) => {
   try {
     const { userId } = auth.getTokenProperties(req.headers['x-access-token']);
     inviteMail(req.body.email);
-    res.json({ message: 'Convite enviado.', userId: userId });
+    res.status(200).json({ message: 'Convite enviado.', userId: userId });
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    res.status(400).json({ message: error.message, error: true });
   }
 };
 
@@ -206,10 +206,10 @@ export const passwordRecovery = async (req, res) => {
         await repository.updateUser({ password: password }, received_token.userId);
         await TokenRepository.deleteToken(received_token.token);
 
-        res.sendStatus(200);
+        res.status(200).json({ message: 'Senha atualizada.' });
       } else throw new Error('invalid token');
-    } else res.sendStatus(400);
+    } else res.status(400).json({ message: 'Dados incompletos.', error: true });
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };

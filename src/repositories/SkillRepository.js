@@ -33,13 +33,12 @@ const createBulkSkills = async (bodies) => {
 const updateSkill = async (body, id) => {
   try {
     const { id: bodyId, ...skillData } = body;
-    await prisma.skill.update({
+    return await prisma.skill.update({
       where: {
         id: Number(id)
       },
       data: skillData
     });
-    return [1];
   } catch (error) {
     throw new Error('falha na operação.');
   }
@@ -47,12 +46,11 @@ const updateSkill = async (body, id) => {
 
 const deleteSkill = async (id) => {
   try {
-    await prisma.skill.delete({
+    return await prisma.skill.delete({
       where: {
         id: Number(id)
       }
     });
-    return 1;
   } catch (error) {
     throw new Error('falha na operação.');
   }

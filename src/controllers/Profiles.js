@@ -12,9 +12,9 @@ export const getAllProfiles = async (req, res) => {
     const filters = buildProfileWhereClause(req);
     const name = buildUserNameWhereClause(req);
     const profiles = await repository.getAllProfiles(filters, itemsPerPage, pageNumber, name);
-    res.json(profiles);
+    res.status(200).json(profiles);
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };
 
@@ -25,13 +25,13 @@ export const getProfileById = async (req, res) => {
       if (profile.searchable) res.json(profile);
       else {
         const { userId } = auth.getTokenProperties(req.headers['x-access-token']);
-        if (profile.userId == userId) res.json(profile);
+        if (profile.userId == userId) res.status(200).json(profile);
         else throw new Error('Acesso não autorizado.');
       }
-    } else res.json({ message: 'Perfil não encontrado.', error: true });
+    } else res.status(404).json({ message: 'Perfil não encontrado.', error: true });
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    if (!error.auth) res.status(500).json({ message: error.message, error: true });
+    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
   }
 };
 
@@ -46,12 +46,12 @@ export const getOwnPerfil = async (req, res) => {
         if (vagas) {
           bestJobs = await Promise.all(vagas.map(async (i) => await JobRepository.getJobById(i.id)));
         }
-        res.json(bestJobs);
+        res.status(200).json(bestJobs);
       }
-    } else res.json({ message: 'Acesso não autorizado.', error: true });
+    } else res.status(401).json({ message: 'Acesso não autorizado.', error: true });
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    if (!error.auth) res.status(500).json({ message: error.message, error: true });
+    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
   }
 };
 
@@ -64,14 +64,14 @@ export const updateProfile = async (req, res) => {
         auth.checkToken(userId, req.headers['x-access-token']);
         const result = await repository.updateProfile(req.body, req.params.id);
         if (result)
-          res.json({
+          res.status(200).json({
             message: 'Perfil atualizado.'
           });
         else throw new Error('Falha ao realizar operação.');
       } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
-    } else res.json({ message: 'Perfil não encontrado.', error: true });
+    } else res.status(404).json({ message: 'Perfil não encontrado.', error: true });
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };
 
@@ -80,13 +80,13 @@ export const createProfile = async (req, res) => {
     auth.checkToken(req.body.userId, req.headers['x-access-token']);
     const profile = await repository.createProfile(req.body);
     if (profile)
-      res.json({
+      res.status(201).json({
         message: 'Perfil criado.'
       });
     else throw new Error('Falha ao realizar operação.');
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    if (!error.auth) res.status(500).json({ message: error.message, error: true });
+    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
   }
 };
 
@@ -98,13 +98,13 @@ export const deleteProfile = async (req, res) => {
     if (profile && profile.id == req.params.id) {
       const result = await repository.deleteProfile(profile.id);
       if (result)
-        res.json({
+        res.status(204).json({
           message: 'Perfil deletado.'
         });
       else throw new Error('Falha ao realizar operação.');
     } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    if (!error.auth) res.status(500).json({ message: error.message, error: true });
+    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
   }
 };

@@ -31,7 +31,6 @@ const getJobsByUserId = async (userId, created, itemsPerPage, pageNumber) => {
     prisma.userJob.count({ where: filter })
   ]);
 
-  // Formata o retorno para manter a estrutura do Sequelize (com nested objects)
   return { rows: userJobs, count };
 };
 
