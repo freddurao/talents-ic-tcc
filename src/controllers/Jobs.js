@@ -44,8 +44,8 @@ export const getJobById = async (req, res) => {
 //Create new job
 export const createJob = async (req, res) => {
   try {
-    auth.checkToken(userId, req.headers['x-access-token']);
     const userId = req.body.userId;
+    auth.checkToken(userId, req.headers['x-access-token']);
     const job = await repository.createJob(req.body, userId);
     if (job) {
       emailsListMail(job, req.body.emailsToSend);

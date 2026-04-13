@@ -47,7 +47,8 @@ const createJob = async (body, userId) => {
       workload: parseFloat(jobData.workload),
       salary: parseFloat(jobData.salary),
       startingDate: new Date(jobData.startingDate),
-      endingDate: new Date(jobData.endingDate)
+      endingDate: new Date(jobData.endingDate),
+      createdAt: new Date(),
     }
   });
   
