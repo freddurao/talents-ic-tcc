@@ -12,7 +12,7 @@ services:
     volumes:
       - db_talentic:/var/lib/mysql
     ports:
-      - '3306:3306'
+      - '3307:3306'
     networks:
       - app-network
     healthcheck:
@@ -45,6 +45,7 @@ services:
       DATABASE_NAME: ${DATABASE_NAME}
       DATABASE_USER: root
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      
     volumes:
       - .:/app
       - /app/node_modules
