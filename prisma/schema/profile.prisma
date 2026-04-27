@@ -1,0 +1,15 @@
+model Profile {
+    id           Int      @id @default(autoincrement())
+    birthDate    DateTime @map("birth_date") //@db.Date
+    scholarity   String  //@db.VarChar(30)
+    knowledge    String //@db.Text
+    technologies String //@db.Text
+    languages    String? //@db.VarChar(255)
+    linkResume   String? @map("link_resume") //@db.VarChar(255) 
+    searchable   Boolean
+
+    userId Int  @unique @map("user_id")
+    user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@map("profiles")
+}

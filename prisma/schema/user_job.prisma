@@ -1,0 +1,11 @@
+model UserJob {
+  created Boolean
+
+  userId Int @map("user_id")
+  jobId  Int @map("job_id")
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job    Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@id([userId, jobId])
+  @@map("user_jobs")
+}
