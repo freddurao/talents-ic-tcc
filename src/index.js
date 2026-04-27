@@ -9,7 +9,6 @@ import healthCheckRoutes from './routes/healthCheckRoutes.js';
 import emailListRoutes from './routes/emailListRoutes.js';
 import cors from 'cors';
 import connect from './utils/connection.js';
-import compression from 'express';
 import helmet from 'helmet';
 import swaggerUi from 'swagger-ui-express';
 import fs from 'fs';
@@ -23,7 +22,6 @@ const app = express();
 
 connect();
 
-app.use(compression());
 app.use(helmet());
 app.use(cors());
 app.use(express.json());

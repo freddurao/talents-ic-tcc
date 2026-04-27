@@ -16,14 +16,14 @@ import {
 const router = express.Router();
 
 //Routes for User
+router.post('/login', authenticate);
+router.post('/convite', inviteUser);
+router.post('/recuperacao/senha', passwordRecovery);
 router.get('/', getAllUsers);
-router.get('/:id', getUserById);
+router.post('/', createUser);
 router.get('/:id/vagas/criadas', getCreatedJobsByUser);
 router.get('/:id/vagas/aplicadas', getAppliedJobsByUser);
-router.post('/', createUser);
-router.post('/convite', inviteUser);
-router.post('/login', authenticate);
-router.post('/recuperacao/senha', passwordRecovery);
+router.get('/:id', getUserById);
 router.patch('/:id', updateUser);
 router.delete('/:id', deleteUser);
 
