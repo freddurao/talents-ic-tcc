@@ -39,7 +39,15 @@ const Profile = db.define('profile', {
   [ProfileAttrs.searchable]: {
     type: DataTypes.BOOLEAN,
     allowNull: false
-  }
+  },
+  [ProfileAttrs.github]: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  [ProfileAttrs.city]: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+  },
 });
 
 //1:1 association

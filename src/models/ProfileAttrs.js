@@ -6,7 +6,9 @@ export const ProfileAttrs = {
   technologies: 'technologies',
   languages: 'languages',
   linkResume: 'linkResume',
-  searchable: 'searchable'
+  searchable: 'searchable',
+  github: 'github',
+  city: 'city',
 };
 
 

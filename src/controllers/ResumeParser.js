@@ -95,11 +95,11 @@ function extractLanguages(text) {
   ]
   const lower = text.toLowerCase()
   const found = known.filter((lang) => lower.includes(lang))
-  // Normaliza para portugues
+ 
   const normalize = {
-    portuguese: 'Portugues', english: 'Ingles', spanish: 'Espanhol',
-    french: 'Frances', german: 'Alemao', italian: 'Italiano',
-    japanese: 'Japones', chinese: 'Chines', russian: 'Russo', korean: 'Coreano',
+    portuguese: 'Português', english: 'Inglês', spanish: 'Espanhol',
+    french: 'Francês', german: 'Alemão', italian: 'Italiano',
+    japanese: 'Japonês', chinese: 'Chines', russian: 'Russo', korean: 'Coreano',
   }
   const normalized = found.map((l) => normalize[l] ?? capitalize(l))
   return [...new Set(normalized)].join(';')
@@ -129,13 +129,13 @@ function extractTechnologies(text) {
 
 function extractKnowledge(text) {
   const known = [
-    'lideranca', 'comunicacao', 'trabalho em equipe', 'proatividade',
-    'criatividade', 'organizacao', 'responsabilidade', 'autonomia',
+    'liderança', 'comunicação', 'trabalho em equipe', 'proatividade',
+    'criatividade', 'organização', 'responsabilidade', 'autonomia',
     'flexibilidade', 'adaptabilidade', 'resolucao de problemas',
-    'pensamento critico', 'inteligencia emocional', 'empatia',
-    'negociacao', 'persuasao', 'gestao de tempo', 'planejamento',
-    'tomada de decisao', 'foco em resultados', 'orientacao ao cliente',
-    'trabalho sob pressao', 'multitarefa', 'atencao aos detalhes',
+    'pensamento crítico', 'inteligência emocional', 'empatia',
+    'negociacao', 'persuasão', 'gestão de tempo', 'planejamento',
+    'tomada de decisão', 'foco em resultados', 'orientação ao cliente',
+    'multitarefa', 'atenção aos detalhes',
     // ingles
     'leadership', 'communication', 'teamwork', 'proactive',
     'creativity', 'organization', 'responsibility', 'autonomy',
