@@ -79,8 +79,17 @@ $ git clone https://github.com/mate85-vagas/vagas-backend
 # Move to root directory
 $ cd vagas-backend
 
+# Build Postgres Database
+$ docker compose up -d
+
 # Install dependencies
 $ npm install
+
+# Initialize prism
+npx prisma generate
+
+# Create db tables
+npx prisma db push
 
 # Run on a local server
 $ npx nodemon src/index

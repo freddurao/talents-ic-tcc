@@ -1,0 +1,29 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: talentic-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: senha
+      POSTGRES_DB: talentic_db
+    volumes:
+      - db_talentic:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d talentic_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db_talentic:
