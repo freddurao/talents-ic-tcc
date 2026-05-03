@@ -52,6 +52,23 @@ const getInformationByJobId = async (jobId) => {
       }
     }
   });
+  
+  if (createdJobsByUser && createdJobsByUser.job) {
+    const job = createdJobsByUser.job;
+    if (job.startingDate) {
+        const d = new Date(job.startingDate);
+        if (!isNaN(d.getTime())) createdJobsByUser.job.startingDate = d.toISOString().split('T')[0];
+    }
+    if (job.endingDate) {
+        const d = new Date(job.endingDate);
+        if (!isNaN(d.getTime())) createdJobsByUser.job.endingDate = d.toISOString().split('T')[0];
+    }
+    if (job.createdAt) {
+        const d = new Date(job.createdAt);
+        if (!isNaN(d.getTime())) createdJobsByUser.job.createdAt = d.toISOString().split('T')[0];
+    }
+  }
+  
   return createdJobsByUser;
 };
 

@@ -36,7 +36,6 @@ const htmlSetup = (userApplier, userReceiver, profileUserApplier, jobToApply) =>
       '${contato}',
       `Para entrar em contato com o aplicante, <a style="color: white" href="mailto:${userApplier.email}"> clique aqui.</a>`
     );
-    console.log(profileUserApplier.technologies);
     return html;
   } catch (e) {
     throw Error(e);
@@ -80,9 +79,7 @@ export const mail_sender = async (userApplier, userReceiver, profileUserApplier,
         pass: process.env.PASSWORD
       }
     });
-    return transporter.sendMail(mailOptions, function (err, info) {
-      return err || info;
-    });
+    return transporter.sendMail(mailOptions);
   } catch (e) {
     throw new Error(e);
   }
@@ -100,9 +97,7 @@ export const inviteMail = async (newUserEmail) => {
         pass: process.env.PASSWORD
       }
     });
-    return transporter.sendMail(mailOptions, function (err, info) {
-      return err || info;
-    });
+    return transporter.sendMail(mailOptions);
   } catch (e) {
     throw new Error(e);
   }
@@ -130,9 +125,7 @@ export const recoveryMail = async (email, token) => {
         pass: process.env.PASSWORD
       }
     });
-    return transporter.sendMail(mailOptions, function (err, info) {
-      return err || info;
-    });
+    return transporter.sendMail(mailOptions);
   } catch (e) {
     throw new Error(e);
   }
@@ -186,9 +179,7 @@ export const emailsListMail = async(job, emailsLists) => {
         pass: process.env.PASSWORD
       }
     });
-    return transporter.sendMail(mailOptions, function (err, info) {
-      return err || info;
-    });
+    return transporter.sendMail(mailOptions);
   } catch (e) {
     throw new Error(e);
   }

@@ -26,13 +26,39 @@ export const getAllJobs = async (req, res) => {
 export const getJobById = async (req, res) => {
   try {
     const jobInfo = await User_JobRepository.getInformationByJobId(req.params.id);
-    const { userId } = auth.getTokenProperties(req.headers['x-access-token']);
-
+    
     if (jobInfo) {
-      if (userId == jobInfo.userId) {
-        jobInfo['recmd_profiles'] = await recommended_users_to_job(userId, jobInfo.job);
+      const token = req.headers['x-access-token'];
+      if (token) {
+        try {
+          const { userId } = auth.getTokenProperties(token);
+          if (userId == jobInfo.userId) {
+            jobInfo['recmd_profiles'] = await recommended_users_to_job(userId, jobInfo.job);
+          }
+        } catch (authError) {
+          
+        }
       }
-      res.status(200).json(jobInfo);
+      
+      const formattedJobInfo = { ...jobInfo };
+      if (formattedJobInfo.job) {
+          const job = { ...formattedJobInfo.job };
+          if (job.startingDate) {
+              const d = new Date(job.startingDate);
+              if (!isNaN(d.getTime())) job.startingDate = d.toISOString().split('T')[0];
+          }
+          if (job.endingDate) {
+              const d = new Date(job.endingDate);
+              if (!isNaN(d.getTime())) job.endingDate = d.toISOString().split('T')[0];
+          }
+          if (job.createdAt) {
+              const d = new Date(job.createdAt);
+              if (!isNaN(d.getTime())) job.createdAt = d.toISOString().split('T')[0];
+          }
+          formattedJobInfo.job = job;
+      }
+      
+      res.status(200).json(formattedJobInfo);
     } else {
       res.status(404).json({ message: 'Vaga não encontrada.', error: true });
     }
@@ -48,7 +74,9 @@ export const createJob = async (req, res) => {
     auth.checkToken(userId, req.headers['x-access-token']);
     const job = await repository.createJob(req.body, userId);
     if (job) {
-      emailsListMail(job, req.body.emailsToSend);
+      if (req.body.emailsToSend && req.body.emailsToSend.length > 0) {
+        await emailsListMail(job, req.body.emailsToSend);
+      }
       res.status(201).json({
         message: 'Vaga criada.'
       });
@@ -140,16 +168,28 @@ export const applyToJob = async (req, res) => {
     let count = await ProfileRepository.countProfileByUserId(userId);
     if (!count) return res.status(400).json({ message: 'Necessário criar perfil.', error: true, emptyProfile: true });
     
-    if (!(await repository.countValidJob(req.body.jobId))) throw new Error('Vaga expirada');
+    if (!(await repository.countValidJob(req.body.jobId))) return res.status(400).json({ message: 'Vaga expirada.', error: true });
     
-    const userJob = await repository.applyToJob(userId, req.body.jobId);
+    let userJob;
+    try {
+      userJob = await repository.applyToJob(userId, req.body.jobId);
+    } catch (e) {
+      if (e.code === 'P2002') {
+        return res.status(400).json({ message: 'Você já se candidatou a esta vaga.', error: true });
+      }
+      throw e;
+    }
     if (userJob) {
-      const userApplier = await UserRepository.getUserById(userId);
-      const infoUserRecvAndJob = await User_JobRepository.getInformationByJobId(req.body.jobId);
-      const userReceiver = infoUserRecvAndJob.user;
-      const profileUserApplier = await ProfileRepository.getProfileByUserId(userId);
-      const jobToApply = infoUserRecvAndJob.job;
-      await mail_sender(userApplier, userReceiver, profileUserApplier, jobToApply);
+      try {
+        const userApplier = await UserRepository.getUserById(userId);
+        const infoUserRecvAndJob = await User_JobRepository.getInformationByJobId(req.body.jobId);
+        const userReceiver = infoUserRecvAndJob.user;
+        const profileUserApplier = await ProfileRepository.getProfileByUserId(userId);
+        const jobToApply = infoUserRecvAndJob.job;
+        await mail_sender(userApplier, userReceiver, profileUserApplier, jobToApply);
+      } catch (mailErr) {
+        
+      }
       res.status(200).json({ message: 'Aplicação realizada.' });
     } else throw new Error('Falha ao realizar operação.');
   } catch (error) {

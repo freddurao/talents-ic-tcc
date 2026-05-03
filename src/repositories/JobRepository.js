@@ -13,7 +13,15 @@ const getAllJobs = async (filters, itemsPerPage, pageNumber) => {
     prisma.job.count({ where: filters })
   ]);
 
-  return { rows: jobs, count };
+    const formattedJobs = jobs.map(job => {
+    const newJob = { ...job };
+    if (newJob.startingDate instanceof Date) newJob.startingDate = newJob.startingDate.toISOString().split("T")[0];
+    if (newJob.endingDate instanceof Date) newJob.endingDate = newJob.endingDate.toISOString().split("T")[0];
+    if (newJob.createdAt instanceof Date) newJob.createdAt = newJob.createdAt.toISOString().split("T")[0];
+    return newJob;
+  });
+
+  return { rows: formattedJobs, count };
 };
 
 const getOnlyJobsToRecommend = async (lista) => {
@@ -33,6 +41,11 @@ const getJobById = async (id) => {
       id: Number(id)
     }
   });
+  if (job) {
+    if (job.startingDate instanceof Date) job.startingDate = job.startingDate.toISOString().split('T')[0];
+    if (job.endingDate instanceof Date) job.endingDate = job.endingDate.toISOString().split('T')[0];
+    if (job.createdAt instanceof Date) job.createdAt = job.createdAt.toISOString().split('T')[0];
+  }
   return job;
 };
 
@@ -46,9 +59,9 @@ const createJob = async (body, userId) => {
       ...jobData,
       workload: parseFloat(jobData.workload),
       salary: parseFloat(jobData.salary),
-      startingDate: new Date(jobData.startingDate),
-      endingDate: new Date(jobData.endingDate),
-      createdAt: new Date(),
+      startingDate: jobData.startingDate ? new Date(jobData.startingDate + 'T12:00:00') : new Date(),
+      endingDate: jobData.endingDate ? new Date(jobData.endingDate + 'T12:00:00') : new Date(),
+      createdAt: new Date()
     }
   });
   
@@ -63,8 +76,8 @@ const updateJob = async (body, id) => {
 
     if (dataToUpdate.workload) dataToUpdate.workload = parseFloat(dataToUpdate.workload);
     if (dataToUpdate.salary) dataToUpdate.salary = parseFloat(dataToUpdate.salary);
-    if (dataToUpdate.startingDate) dataToUpdate.startingDate = new Date(dataToUpdate.startingDate);
-    if (dataToUpdate.endingDate) dataToUpdate.endingDate = new Date(dataToUpdate.endingDate);
+    if (dataToUpdate.startingDate) dataToUpdate.startingDate = new Date(dataToUpdate.startingDate + 'T12:00:00');
+    if (dataToUpdate.endingDate) dataToUpdate.endingDate = new Date(dataToUpdate.endingDate + 'T12:00:00');
 
     return await prisma.job.update({
       where: {
@@ -109,15 +122,24 @@ const deleteExpiredJobs = async () => {
 };
 
 const countValidJob = async (jobId) => {
-  const count = await prisma.job.count({
-    where: {
-      endingDate: {
-        gte: new Date()
-      },
-      id: Number(jobId)
-    }
+  const job = await prisma.job.findUnique({
+    where: { id: Number(jobId) }
   });
-  return count;
+  
+  if (!job) return 0;
+  
+  // Se a data de término for muito no futuro ou nula (se o banco permitir), consideramos válida
+  // O Prisma new Date() pode ter problemas de fuso horário. 
+  // Vamos considerar o início do dia atual para a comparação.
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  
+  if (!job.endingDate || job.endingDate >= today) {
+    return 1;
+  }
+  
+  return 0;
 };
 
 export default {
