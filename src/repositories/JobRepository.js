@@ -128,9 +128,6 @@ const countValidJob = async (jobId) => {
   
   if (!job) return 0;
   
-  // Se a data de término for muito no futuro ou nula (se o banco permitir), consideramos válida
-  // O Prisma new Date() pode ter problemas de fuso horário. 
-  // Vamos considerar o início do dia atual para a comparação.
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
