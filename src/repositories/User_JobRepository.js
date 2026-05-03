@@ -31,7 +31,31 @@ const getJobsByUserId = async (userId, created, itemsPerPage, pageNumber) => {
     prisma.userJob.count({ where: filter })
   ]);
 
-  return { rows: userJobs, count };
+    const formattedUserJobs = userJobs.map(uj => {
+    const newUj = { ...uj };
+    if (newUj.job) {
+      const job = { ...newUj.job };
+      if (job.startingDate instanceof Date) job.startingDate = job.startingDate.toISOString().split('T')[0];
+      else if (job.startingDate) {
+          const d = new Date(job.startingDate);
+          if (!isNaN(d.getTime())) job.startingDate = d.toISOString().split('T')[0];
+      }
+      if (job.endingDate instanceof Date) job.endingDate = job.endingDate.toISOString().split('T')[0];
+      else if (job.endingDate) {
+          const d = new Date(job.endingDate);
+          if (!isNaN(d.getTime())) job.endingDate = d.toISOString().split('T')[0];
+      }
+      if (job.createdAt instanceof Date) job.createdAt = job.createdAt.toISOString().split('T')[0];
+      else if (job.createdAt) {
+          const d = new Date(job.createdAt);
+          if (!isNaN(d.getTime())) job.createdAt = d.toISOString().split('T')[0];
+      }
+      newUj.job = job;
+    }
+    return newUj;
+  });
+
+  return { rows: formattedUserJobs, count };
 };
 
 const getInformationByJobId = async (jobId) => {
