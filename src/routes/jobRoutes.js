@@ -12,6 +12,6 @@ router.post('/aplicacao', applyToJob);
 router.patch('/:id', updateJob);
 router.delete('/:id', deleteJob);
 router.put('/:id', updateStatusJob)
-router.get('/feedback/:id/', getFeedbackStatus)
+router.get('/feedback/:id', getFeedbackStatus)
 
 export default router;

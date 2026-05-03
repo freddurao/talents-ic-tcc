@@ -1,0 +1,11 @@
+model UserJobScore {
+  id     Int    @id @default(autoincrement())
+  status String
+
+  userId Int @map("user_id")
+  jobId  Int @map("job_id")
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job    Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@map("user_job_scores")
+}

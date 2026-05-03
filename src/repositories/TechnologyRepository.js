@@ -1,44 +1,59 @@
-import Technology from '../models/TechnologyModel.js';
-import { TechnologyAttrs } from '../models/TechnologyAttrs.js';
+import prisma from '../common/prisma/prisma.js';
+
+const getAllTechnologies = async () => {
+  const technologies = await prisma.technology.findMany();
+  return technologies;
+};
 
 const getTechnologyById = async (id) => {
-  const technology = await Technology.findOne({
+  const technology = await prisma.technology.findUnique({
     where: {
-      [TechnologyAttrs.id]: id
+      id: Number(id)
     }
   });
   return technology;
 };
 
-const getAllTechnologies = async () => {
-  const technologies = await Technology.findAndCountAll();
-  return technologies;
+const createTechnology = async (body) => {
+  const { id, ...techData } = body;
+  const technology = await prisma.technology.create({
+    data: techData
+  });
+  return technology;
+};
+
+const createBulkTechnologies = async (bodies) => {
+  // Garantimos que nenhum objeto tenha 'id' se for autoincrement
+  const sanitizedBodies = bodies.map(({ id, ...rest }) => rest);
+  return await prisma.technology.createMany({
+    data: sanitizedBodies
+  });
 };
 
 const updateTechnology = async (body, id) => {
-  return await Technology.update(body, {
-    where: {
-      [TechnologyAttrs.id]: id
-    }
-  });
+  try {
+    const { id: bodyId, ...techData } = body;
+    return await prisma.technology.update({
+      where: {
+        id: Number(id)
+      },
+      data: techData
+    });
+  } catch (error) {
+    throw new Error('falha na operação.');
+  }
 };
 
 const deleteTechnology = async (id) => {
-  return await Technology.destroy({
-    where: {
-      [TechnologyAttrs.id]: id
-    }
-  });
+  try {
+    return await prisma.technology.delete({
+      where: {
+        id: Number(id)
+      }
+    });
+  } catch (error) {
+    throw new Error('falha na operação.');
+  }
 };
 
-const createBulkTechnologies = async (body) => {
-  return await Technology.bulkCreate(body);
-};
-
-export default {
-  updateTechnology,
-  getAllTechnologies,
-  getTechnologyById,
-  deleteTechnology,
-  createBulkTechnologies
-};
+export default { getAllTechnologies, getTechnologyById, updateTechnology, deleteTechnology, createTechnology, createBulkTechnologies };

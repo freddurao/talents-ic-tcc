@@ -1,80 +1,89 @@
-import User from '../models/UserModel.js';
-import User_Job from '../models/User_JobModel.js';
-import { UserAttrs } from '../models/UserAttrs.js';
-import Job from '../models/JobModel.js';
+import prisma from '../common/prisma/prisma.js';
 
 const getAllUsers = async () => {
-  const users = await User.findAndCountAll({ attributes: { exclude: ['password'] } });
-  return users;
+  const [users, count] = await prisma.$transaction([
+    prisma.user.findMany({
+      omit: {
+        password: true,
+      }
+    }),
+    prisma.user.count()
+  ]);
+  return { rows: users, count };
 };
 
 const getUserById = async (id) => {
-  const user = await User.findOne({
-    attributes: { exclude: ['password'] },
-    where: {
-      [UserAttrs.id]: id
+  const user = await prisma.user.findUnique({
+    where: { id: Number(id) },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      isAdmin: true,
+      isAuthorized: true
     }
   });
   return user;
 };
 
 const getUserByEmail = async (email) => {
-  const user = await User.findOne({
-    where: {
-      [UserAttrs.email]: email
-    }
+  const user = await prisma.user.findUnique({
+    where: { email: email }
   });
   return user;
 };
 
 const checkExistentEmail = async (email) => {
-  const count = await User.count({
-    where: {
-      [UserAttrs.email]: email
-    }
+  const count = await prisma.user.count({
+    where: { email }
   });
-  return count;
+
+  if (count > 0) {
+    throw new Error('E-mail já cadastrado.');
+  }
 };
 
 const createUser = async (body) => {
-  const user = await User.create(body);
+  const { secret, confirmPassword, ...userData } = body;
+  const user = await prisma.user.create({
+    data: userData
+  });
   return user;
 };
 
 const updateUser = async (body, id) => {
-  const queryResult = await User.update(body, {
-    where: {
-      [UserAttrs.id]: id
-    }
+  const { secret, confirmPassword, ...userData } = body;
+  return await prisma.user.update({
+    where: { id: Number(id) },
+    data: userData
   });
-  if (queryResult === 0) throw new Error('falha na operação.');
-  return queryResult;
 };
 
 const deleteUser = async (id) => {
-  const userCreatedJobs = await User_Job.findAll({
-    attributes: ['jobId'],
+  const userId = Number(id);
+  
+  // Busca os IDs das vagas criadas por este usuário
+  const userCreatedJobs = await prisma.userJob.findMany({
     where: {
-      userId: id,
-      createdByUser: true
-    }
+      userId: userId,
+      created: true
+    },
+    select: { jobId: true }
   });
 
-  userCreatedJobs.forEach(async (jobId) => {
-    await Job.destroy({
-      where: {
-        id: jobId.get('jobId')
-      }
-    });
-  });
+  const jobIds = userCreatedJobs.map((uj) => uj.jobId);
 
-  const queryResult = await User.destroy({
-    where: {
-      id: id
-    }
-  });
-  if (queryResult === 0) throw new Error('falha na operação.');
-  return queryResult;
+  // Deleta as vagas e o usuário. O Prisma/DB cuidará do Cascade para Profile, Token e UserJobScore.
+  await prisma.$transaction([
+    prisma.job.deleteMany({
+      where: { id: { in: jobIds } }
+    }),
+    prisma.user.delete({
+      where: { id: userId }
+    })
+  ]);
+
+  return 1;
 };
 
 export default { getAllUsers, getUserByEmail, getUserById, checkExistentEmail, deleteUser, updateUser, createUser };
