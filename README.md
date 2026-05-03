@@ -95,7 +95,7 @@ npx prisma db push
 $ npx nodemon src/index
 ```
 
-##### Make sure to have a MySQL database named vagas_db running and all the environment variables set.
+##### Make sure to have a PSQL database running on port 5432 and all the environment variables set.
 
 #### Running the tests
 
