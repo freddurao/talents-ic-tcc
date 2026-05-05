@@ -28,8 +28,9 @@ export const getJobById = async (req, res) => {
     const jobInfo = await User_JobRepository.getInformationByJobId(req.params.id);
     
     if (jobInfo) {
-      const token = req.headers['x-access-token'];
-      if (token) {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
         try {
           const { userId } = auth.getTokenProperties(token);
           if (userId == jobInfo.userId) {
@@ -70,8 +71,7 @@ export const getJobById = async (req, res) => {
 //Create new job
 export const createJob = async (req, res) => {
   try {
-    const userId = req.body.userId;
-    auth.checkToken(userId, req.headers['x-access-token']);
+    const { userId } = req.user;
     const job = await repository.createJob(req.body, userId);
     if (job) {
       if (req.body.emailsToSend && req.body.emailsToSend.length > 0) {
@@ -82,8 +82,7 @@ export const createJob = async (req, res) => {
       });
     } else throw new Error('Falha ao realizar operação.');
   } catch (error) {
-    if (!error.auth) res.status(500).json({ message: error.message, error: true });
-    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };
 
@@ -91,24 +90,23 @@ export const createJob = async (req, res) => {
 export const updateJob = async (req, res) => {
   try {
     const jobId = req.params.id;
-    const { isAdmin, userId } = auth.getTokenProperties(req.headers['x-access-token']);
+    const { isAdmin, userId } = req.user;
 
     if ((await User_JobRepository.countUser_JobByJobIdAndUserId(jobId, userId)) || isAdmin) {
       await repository.updateJob(req.body, jobId);
       return res.status(200).json({
         message: 'Vaga atualizada.'
       });
-    } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
+    } else res.status(401).json({ message: 'Acesso não autorizado.', error: true, notAuthorized: true });
   } catch (error) {
-    if (!error.auth) res.status(500).json({ message: error.message, error: true });
-    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };
 
 export const getFeedbackStatus = async(req, res) => {
   try {
     const jobId = req.params.id;
-    const { userId } = auth.getTokenProperties(req.headers['x-access-token']);
+    const { userId } = req.user;
     const result = await User_JobScoreRepository.getUser_JobScoreStatus(userId, jobId);
     
     if (result && result.status) {
@@ -117,15 +115,14 @@ export const getFeedbackStatus = async(req, res) => {
       res.status(401).json({message: 'Acesso não autorizado.', error: true, notAuthorized:true});
     }
   } catch (error) {
-    if (!error.auth) res.status(500).json({ message: error.message, error: true });
-    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };
 
 export const updateStatusJob = async (req, res) => {
   try {
     const jobId = req.params.id;
-    const { userId } = auth.getTokenProperties(req.headers['x-access-token']);
+    const { userId } = req.user;
     
     // Verifica se existe o registro antes de atualizar usando o repositório
     const exists = await User_JobScoreRepository.getInformationByJobIdAndUserId(jobId, userId);
@@ -139,32 +136,29 @@ export const updateStatusJob = async (req, res) => {
       res.status(401).json({ message: 'Acesso não autorizado.', error: true, notAuthorized: true });
     }
   } catch (error) {
-    if (!error.auth) res.status(500).json({ message: error.message, error: true });
-    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };
 
 //Delete job from db
 export const deleteJob = async (req, res) => {
   try {
-    const { userId, isAdmin } = auth.getTokenProperties(req.headers['x-access-token']);
+    const { userId, isAdmin } = req.user;
     const jobId = req.params.id;
 
     if ((await User_JobRepository.countUser_JobByJobIdAndUserId(jobId, userId)) || isAdmin) {
       await repository.deleteJob(jobId);
       return res.status(204).json();
-    } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
+    } else res.status(401).json({ message: 'Acesso não autorizado.', error: true, notAuthorized: true });
   } catch (error) {
-    if (!error.auth) res.status(500).json({ message: error.message, error: true });
-    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };
 
 //Apply user to a job and send an email for the job creator
 export const applyToJob = async (req, res) => {
   try {
-    const userId = req.body.userId;
-    auth.checkToken(userId, req.headers['x-access-token']);
+    const { userId } = req.user;
     let count = await ProfileRepository.countProfileByUserId(userId);
     if (!count) return res.status(400).json({ message: 'Necessário criar perfil.', error: true, emptyProfile: true });
     
@@ -193,7 +187,6 @@ export const applyToJob = async (req, res) => {
       res.status(200).json({ message: 'Aplicação realizada.' });
     } else throw new Error('Falha ao realizar operação.');
   } catch (error) {
-    if (!error.auth) res.status(500).json({ message: error.message, error: true });
-    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };

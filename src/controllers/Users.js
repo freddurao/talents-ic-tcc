@@ -30,11 +30,8 @@ const checkExistentEmail = async (email) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    const { isAdmin } = auth.getTokenProperties(req.headers['x-access-token']);
-    if (isAdmin) {
-      const users = await repository.getAllUsers();
-      res.status(200).json(users);
-    } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
+    const users = await repository.getAllUsers();
+    res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: error.message, error: true });
   }
@@ -42,7 +39,11 @@ export const getAllUsers = async (req, res) => {
 
 export const getUserById = async (req, res) => {
   try {
-    auth.checkToken(req.params.id, req.headers['x-access-token']);
+    const { userId, isAdmin } = req.user;
+    if (req.params.id != userId && !isAdmin) {
+      return res.status(401).json({ message: 'Acesso não autorizado.', error: true, notAuthorized: true });
+    }
+
     const user = await repository.getUserById(req.params.id);
     if (user) {
       const profile = await ProfileRepository.getProfileByUserId(user.id);
@@ -50,36 +51,41 @@ export const getUserById = async (req, res) => {
       res.status(200).json(user);
     } else res.status(404).json({ message: 'Usuário não encontrado.', error: true });
   } catch (error) {
-    if (!error.auth) res.status(500).json({ message: error.message, error: true });
-    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };
 
 //Get all jobs that user created
 export const getCreatedJobsByUser = async (req, res) => {
   try {
-    auth.checkToken(req.params.id, req.headers['x-access-token']);
+    const { userId, isAdmin } = req.user;
+    if (req.params.id != userId && !isAdmin) {
+      return res.status(401).json({ message: 'Acesso não autorizado.', error: true, notAuthorized: true });
+    }
+
     const pageNumber = parseInt(req.query.pageNumber);
     const itemsPerPage = parseInt(req.query.itemsPerPage);
     const user_jobs = await User_JobRepository.getJobsByUserId(req.params.id, true, itemsPerPage, pageNumber);
     res.status(200).json(user_jobs);
   } catch (error) {
-    if (!error.auth) res.status(500).json({ message: error.message, error: true });
-    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };
 
 //Get all jobs that user applied to
 export const getAppliedJobsByUser = async (req, res) => {
   try {
-    auth.checkToken(req.params.id, req.headers['x-access-token']);
+    const { userId, isAdmin } = req.user;
+    if (req.params.id != userId && !isAdmin) {
+      return res.status(401).json({ message: 'Acesso não autorizado.', error: true, notAuthorized: true });
+    }
+
     const pageNumber = parseInt(req.query.pageNumber);
     const itemsPerPage = parseInt(req.query.itemsPerPage);
     const user_jobs = await User_JobRepository.getJobsByUserId(req.params.id, false, itemsPerPage, pageNumber);
     res.status(200).json(user_jobs);
   } catch (error) {
-    if (!error.auth) res.status(500).json({ message: error.message, error: true });
-    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };
 
@@ -111,7 +117,6 @@ export const authenticate = async (req, res) => {
       //Compare password from req body to stored password by bcrypt compare
       const validPassword = await bcrypt.compare(req.body.password, user.password);
       if (validPassword) {
-        dotenv.config();
         const token = auth.createToken(user.id, user.isAdmin);
         res.status(200).json({
           id: user.id,
@@ -130,7 +135,7 @@ export const authenticate = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   try {
-    const { isAdmin, userId } = auth.getTokenProperties(req.headers['x-access-token']);
+    const { isAdmin, userId } = req.user;
 
     if (req.body.email) {
       checkValidEmail(req.body.email);
@@ -147,30 +152,28 @@ export const updateUser = async (req, res) => {
       return res.status(200).json({
         message: 'usuário atualizado.'
       });
-    } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
+    } else res.status(401).json({ message: 'Acesso não autorizado.', error: true, notAuthorized: true });
   } catch (error) {
-    if (!error.auth) res.status(500).json({ message: error.message, error: true });
-    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };
 
 export const deleteUser = async (req, res) => {
   try {
-    const { isAdmin, userId } = auth.getTokenProperties(req.headers['x-access-token']);
+    const { isAdmin, userId } = req.user;
 
     if (req.params.id == userId || isAdmin) {
       await repository.deleteUser(req.params.id);
       return res.status(204).json();
-    } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
+    } else res.status(401).json({ message: 'Acesso não autorizado.', error: true, notAuthorized: true });
   } catch (error) {
-    if (!error.auth) res.status(500).json({ message: error.message, error: true });
-    else res.status(401).json({ message: error.message, error: true, notAuthorized: true });
+    res.status(500).json({ message: error.message, error: true });
   }
 };
 
 export const inviteUser = async (req, res) => {
   try {
-    const { userId } = auth.getTokenProperties(req.headers['x-access-token']);
+    const { userId } = req.user;
     inviteMail(req.body.email);
     res.status(200).json({ message: 'Convite enviado.', userId: userId });
   } catch (error) {
