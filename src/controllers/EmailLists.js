@@ -1,13 +1,9 @@
 import repository from '../repositories/EmailListRepository.js';
-import auth from '../utils/auth.js';
 
 export const getAllEmailLists = async (req, res) => {
   try {
-    const { isAdmin } = auth.getTokenProperties(req.headers['x-access-token']);
-    if (isAdmin) {
-      const emailList = await repository.getAllEmailList();
-      res.status(200).json(emailList);
-    } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
+    const emailList = await repository.getAllEmailList();
+    res.status(200).json(emailList);
   } catch (error) {
     res.status(500).json({ message: error.message, error: true });
   }
@@ -15,11 +11,8 @@ export const getAllEmailLists = async (req, res) => {
 
 export const getEmailListById = async (req, res) => {
   try {
-    const { isAdmin } = auth.getTokenProperties(req.headers['x-access-token']);
-    if (isAdmin) {
-      const emailList = await repository.getEmailListById(req.params.id);
-      res.status(200).json(emailList);
-    } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
+    const emailList = await repository.getEmailListById(req.params.id);
+    res.status(200).json(emailList);
   } catch (error) {
     res.status(500).json({ message: error.message, error: true });
   }
@@ -27,15 +20,12 @@ export const getEmailListById = async (req, res) => {
 
 export const createBulkEmailLists = async (req, res) => {
   try {
-    const { isAdmin } = auth.getTokenProperties(req.headers['x-access-token']);
-    if (isAdmin) {
-      const result = await repository.createBulkEmailLists(req.body);
-      if (result.count > 0)
-        res.status(201).json({
-          message: 'Listas de email criadas.'
-        });
-      else throw new Error('Falha ao realizar operação.');
-    } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
+    const result = await repository.createBulkEmailLists(req.body);
+    if (result.count > 0)
+      res.status(201).json({
+        message: 'Listas de email criadas.'
+      });
+    else throw new Error('Falha ao realizar operação.');
   } catch (error) {
     res.status(500).json({ message: error.message, error: true });
   }
@@ -43,15 +33,12 @@ export const createBulkEmailLists = async (req, res) => {
 
 export const updateAllIsActive = async (req, res) => {
   try {
-    const { isAdmin } = auth.getTokenProperties(req.headers['x-access-token']);
-    if (isAdmin) {
-      const result = await repository.updateAllIsActive(req.body.state);
-      if (result)
-        res.status(200).json({
-          message: 'Status das listas atualizado.'
-        });
-      else throw new Error('Falha ao realizar operação.');
-    } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
+    const result = await repository.updateAllIsActive(req.body.state);
+    if (result)
+      res.status(200).json({
+        message: 'Status das listas atualizado.'
+      });
+    else throw new Error('Falha ao realizar operação.');
   } catch (error) {
     res.status(500).json({ message: error.message, error: true });
   }
@@ -59,15 +46,12 @@ export const updateAllIsActive = async (req, res) => {
 
 export const updateEmailList = async (req, res) => {
   try {
-    const { isAdmin } = auth.getTokenProperties(req.headers['x-access-token']);
-    if (isAdmin) {
-      const result = await repository.updateEmailList(req.body, req.params.id);
-      if (result)
-        res.status(200).json({
-          message: 'Lista de e-mails atualizada.'
-        });
-      else throw new Error('Falha ao realizar operação.');
-    } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
+    const result = await repository.updateEmailList(req.body, req.params.id);
+    if (result)
+      res.status(200).json({
+        message: 'Lista de e-mails atualizada.'
+      });
+    else throw new Error('Falha ao realizar operação.');
   } catch (error) {
     res.status(500).json({ message: error.message, error: true });
   }
@@ -75,18 +59,15 @@ export const updateEmailList = async (req, res) => {
 
 export const deleteBulkEmailLists = async (req, res) => {
   try {
-    const { isAdmin } = auth.getTokenProperties(req.headers['x-access-token']);
-    if (isAdmin) {
-      const result = await repository.deleteBulkEmailLists(req.params.ids.split(','));
+    const result = await repository.deleteBulkEmailLists(req.params.ids.split(','));
 
-      if (result.count > 0) {
-        res.status(200).json({
-          message: 'Listas de e-mail deletadas.'
-        });
-      } else {
-        throw new Error('Falha ao realizar operação.');
-      }
-    } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
+    if (result.count > 0) {
+      res.status(200).json({
+        message: 'Listas de e-mail deletadas.'
+      });
+    } else {
+      throw new Error('Falha ao realizar operação.');
+    }
   } catch (error) {
     res.status(500).json({ message: error.message, error: true });
   }

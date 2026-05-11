@@ -13,18 +13,6 @@ const createToken = (id, isAdmin) => {
   }
 };
 
-//Validates token and token's userId
-const checkToken = (id, token) => {
-  try {
-    const decoded = jwt.verify(token, process.env.SECRET);
-    if (decoded.userId != id) throw new Error();
-  } catch (error) {
-    error.message = 'Acesso não autorizado.';
-    error.auth = true;
-    throw error;
-  }
-};
-
 const getTokenProperties = (token) => {
   try {
     const decoded = jwt.verify(token, process.env.SECRET);
@@ -36,4 +24,4 @@ const getTokenProperties = (token) => {
   }
 };
 
-export default { createToken, checkToken, getTokenProperties };
+export default { createToken, getTokenProperties };

@@ -26,12 +26,12 @@ export const recommended_vacancy = async (userId, profile) => {
 
     // id's dos jobs aplicados
     appliedJobsByUser.forEach(element => {
-        const id = (element.jobId).toString();
+        const id = Number(element.jobId);
         createdAndAppliedJobs.add(id);
     });
     // id's dos jobs criados
     createdJobsByUser.forEach(element => {
-        const id = (element.jobId).toString();
+        const id = Number(element.jobId);
         createdAndAppliedJobs.add(id);
     });
 
