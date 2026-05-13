@@ -14,6 +14,7 @@ import swaggerUi from 'swagger-ui-express';
 import fs from 'fs';
 import yaml from 'js-yaml';
 import { deleteExpiredJobs } from './utils/schedule.js';
+import errorMiddleware from './middlewares/errorMiddleware.js';
 
 const fileContents = fs.readFileSync('swagger.yml', 'utf8');
 const swaggerDocument = yaml.loadAll(fileContents);
@@ -35,6 +36,8 @@ app.use('/health-check', healthCheckRoutes);
 app.use('/email-list', emailListRoutes);
 
 app.use('/api-doc/v1', swaggerUi.serve, swaggerUi.setup(swaggerDocument[0], { explorer: true }));
+
+app.use(errorMiddleware);
 
 deleteExpiredJobs();
 
