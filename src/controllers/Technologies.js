@@ -1,67 +1,47 @@
-import repository from '../repositories/TechnologyRepository.js';
+import TechnologyService from '../services/TechnologyService.js';
 
-export const getAllTechnologies = async (req, res) => {
+export const getAllTechnologies = async (req, res, next) => {
   try {
-    const technologies = await repository.getAllTechnologies();
+    const technologies = await TechnologyService.getAllTechnologies();
     res.status(200).json(technologies);
   } catch (error) {
-    res.status(500).json({ message: error.message, error: true });
+    next(error);
   }
 };
 
-export const getTechnologyById = async (req, res) => {
+export const getTechnologyById = async (req, res, next) => {
   try {
-    const technology = await repository.getTechnologyById(req.params.id);
-
-    if (!technology) {
-      return res.status(404).json({
-        message: 'Tecnologia não encontrada.',
-        error: true
-      });
-    }
-
-    return res.status(200).json(technology);
+    const technology = await TechnologyService.getTechnologyById(req.params.id);
+    res.status(200).json(technology);
   } catch (error) {
-    res.status(500).json({ message: error.message, error: true });
+    next(error);
   }
 };
 
-export const updateTechnology = async (req, res) => {
+export const updateTechnology = async (req, res, next) => {
   try {
-    const result = await repository.updateTechnology(req.body, req.params.id);
-    if (result)
-      res.status(200).json({
-        message: 'Tecnologia atualizada.'
-      });
-    else throw new Error('Falha ao realizar operação.');
+    const result = await TechnologyService.updateTechnology(req.params.id, req.body);
+    res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: error.message, error: true });
+    next(error);
   }
 };
 
-export const deleteTechnology = async (req, res) => {
+export const deleteTechnology = async (req, res, next) => {
   try {
-    const result = await repository.deleteTechnology(req.params.id);
-    if (result)
-      res.status(204).json({
-        message: 'Tecnologia deletada.'
-      });
-    else throw new Error('Falha ao realizar operação.');
+    await TechnologyService.deleteTechnology(req.params.id);
+    res.status(204).json();
   } catch (error) {
-    res.status(500).json({ message: error.message, error: true });
+    next(error);
   }
 };
 
 //Create multiple technologies on db at the same request
-export const createBulkTechnologies = async (req, res) => {
+export const createBulkTechnologies = async (req, res, next) => {
   try {
-    const result = await repository.createBulkTechnologies(req.body);
-    if (result.count > 0)
-      res.status(201).json({
-        message: 'Tecnologias criadas.'
-      });
-    else throw new Error('Falha ao realizar operação.');
+    const result = await TechnologyService.createBulkTechnologies(req.body);
+    res.status(201).json(result);
   } catch (error) {
-    res.status(500).json({ message: error.message, error: true });
+    next(error);
   }
 };
