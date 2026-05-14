@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { env } from '../utils/env-validator.js';
 
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -18,7 +19,7 @@ const authMiddleware = (req, res, next) => {
     return res.status(401).json({ message: 'Token malformatado.', error: true, notAuthorized: true });
   }
 
-  jwt.verify(token, process.env.SECRET, (err, decoded) => {
+  jwt.verify(token, env.SECRET, (err, decoded) => {
     if (err) {
       return res.status(401).json({ message: 'Token inválido.', error: true, notAuthorized: true });
     }

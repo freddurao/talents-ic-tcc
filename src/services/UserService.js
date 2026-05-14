@@ -7,6 +7,7 @@ import auth from '../utils/auth.js';
 import AppError from '../utils/AppError.js';
 import { inviteMail, recoveryMail } from '../utils/emailSender.js';
 import crypto from 'crypto';
+import { env } from '../utils/env-validator.js';
 
 const checkValidEmail = (email) => {
   const regex =
@@ -68,7 +69,7 @@ const createUser = async (userData) => {
   const salt = await bcrypt.genSalt(10);
   userData.password = await bcrypt.hash(userData.password, salt);
 
-  if (!(userData.isAdmin === true && userData.secret === process.env.SECRET_ADM)) {
+  if (!(userData.isAdmin === true && userData.secret === env.SECRET_ADM)) {
     userData.isAdmin = false;
     userData.isAuthorized = false;
   } else {
