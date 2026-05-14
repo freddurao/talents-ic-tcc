@@ -1,8 +1,6 @@
-import dotenv from 'dotenv';
+import { env } from './env-validator.js';
 import nodemailer from 'nodemailer';
 import fs from 'fs';
-
-dotenv.config();
 
 const returnScholarityFullDescription = (scholarity) => {
   if (scholarity == 'supc') return 'Superior Completo';
@@ -60,7 +58,7 @@ const checkLanguageAndResume = (profile) => {
 
 const buildMailOptions = (userReceiver, jobToApply, htmlEmail) => {
   let mailOptions = {
-    from: process.env.LOGIN,
+    from: env.LOGIN,
     to: userReceiver.email,
     subject: `Aplicação para a vaga ${jobToApply.title}`,
     html: htmlEmail
@@ -75,8 +73,8 @@ export const mail_sender = async (userApplier, userReceiver, profileUserApplier,
     var transporter = nodemailer.createTransport({
       service: 'outlook',
       auth: {
-        user: process.env.LOGIN,
-        pass: process.env.PASSWORD
+        user: env.LOGIN,
+        pass: env.PASSWORD
       }
     });
     return transporter.sendMail(mailOptions);
@@ -88,13 +86,13 @@ export const mail_sender = async (userApplier, userReceiver, profileUserApplier,
 export const inviteMail = async (newUserEmail) => {
   try {
     let html = fs.readFileSync('./././inviteEmail.html', 'utf8');
-    html = html.replace('${link}', process.env.SIGNUP_URL);
+    html = html.replace('${link}', env.SIGNUP_URL);
     let mailOptions = inviteMailOptions(newUserEmail, html);
     var transporter = nodemailer.createTransport({
       service: 'outlook',
       auth: {
-        user: process.env.LOGIN,
-        pass: process.env.PASSWORD
+        user: env.LOGIN,
+        pass: env.PASSWORD
       }
     });
     return transporter.sendMail(mailOptions);
@@ -105,7 +103,7 @@ export const inviteMail = async (newUserEmail) => {
 
 const inviteMailOptions = (newUserEmail, html) => {
   let mailOptions = {
-    from: process.env.LOGIN,
+    from: env.LOGIN,
     to: newUserEmail,
     subject: `Convite para Talentos-IC`,
     html: html
@@ -116,13 +114,13 @@ const inviteMailOptions = (newUserEmail, html) => {
 export const recoveryMail = async (email, token) => {
   try {
     let html = fs.readFileSync('./././recoveryMail.html', 'utf8');
-    html = html.replace('${link}', process.env.RECOVERY_URL + token);
+    html = html.replace('${link}', env.RECOVERY_URL + token);
     let mailOptions = recoveryMailOptions(email, html);
     var transporter = nodemailer.createTransport({
       service: 'outlook',
       auth: {
-        user: process.env.LOGIN,
-        pass: process.env.PASSWORD
+        user: env.LOGIN,
+        pass: env.PASSWORD
       }
     });
     return transporter.sendMail(mailOptions);
@@ -133,7 +131,7 @@ export const recoveryMail = async (email, token) => {
 
 const recoveryMailOptions = (email, html) => {
   let mailOptions = {
-    from: process.env.LOGIN,
+    from: env.LOGIN,
     to: email,
     subject: `Recuperação de Senha (Talentos-IC)`,
     html: html
@@ -170,13 +168,13 @@ export const emailsListMail = async(job, emailsLists) => {
     const escolaridade = job.scholarity
     html = html.replace('${scholarity}', escol[escolaridade]);
     html = html.replace('${titulo}', job.title)
-    html = html.replace('${link}', process.env.URL_VAGA + (job.id).toString())
+    html = html.replace('${link}', env.URL_VAGA + (job.id).toString())
     let mailOptions = emailsListMailOptions(html, emailsLists)
     var transporter = nodemailer.createTransport({
       service: 'outlook',
       auth: {
-        user: process.env.LOGIN,
-        pass: process.env.PASSWORD
+        user: env.LOGIN,
+        pass: env.PASSWORD
       }
     });
     return transporter.sendMail(mailOptions);
@@ -187,7 +185,7 @@ export const emailsListMail = async(job, emailsLists) => {
 
 const emailsListMailOptions = (html, emailsLists) => {
   let mailOptions = {
-    from: process.env.LOGIN,
+    from: env.LOGIN,
     to: emailsLists,
     subject: `Nova Vaga disponível! (Talentos IC)`,
     html: html

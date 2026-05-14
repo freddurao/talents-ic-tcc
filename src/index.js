@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import { env } from './utils/env-validator.js';
 import express from 'express';
 import jobRoutes from './routes/jobRoutes.js';
 import userRoutes from './routes/userRoutes.js';
@@ -41,4 +41,4 @@ app.use(errorMiddleware);
 
 deleteExpiredJobs();
 
-app.listen(5000, () => console.log('Server running at port 5000'));
+app.listen(env.PORT, () => console.log(`Server running at port ${env.PORT}`));
