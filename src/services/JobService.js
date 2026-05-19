@@ -3,7 +3,7 @@ import userJobRepository from '../repositories/User_JobRepository.js';
 import profileRepository from '../repositories/ProfileRepository.js';
 import userRepository from '../repositories/UserRepository.js';
 import userJobScoreRepository from '../repositories/User_JobScoreRepository.js';
-import { mail_sender, emailsListMail } from '../utils/emailSender.js';
+import EmailService from './EmailService.js';
 import { recommended_users_to_job } from '../utils/profilesRecommendation.js';
 import AppError from '../utils/AppError.js';
 import auth from '../utils/auth.js';
@@ -64,11 +64,8 @@ const createJob = async (jobData, userId) => {
   }
 
   if (jobData.emailsToSend && jobData.emailsToSend.length > 0) {
-    try {
-      await emailsListMail(job, jobData.emailsToSend);
-    } catch (mailError) {
-      console.error('Failed to send job creation emails:', mailError);
-    }
+    // Fire and forget but with internal logging in EmailService
+    EmailService.sendJobCreatedEmail(job, jobData.emailsToSend);
   }
 
   return { message: 'Vaga criada.' };
@@ -119,21 +116,21 @@ const applyToJob = async (userId, jobId) => {
     }
 
     // Async email notification
-    try {
-      const userApplier = await userRepository.getUserById(userId);
-      const infoUserRecvAndJob = await userJobRepository.getInformationByJobId(jobId);
-      const userReceiver = infoUserRecvAndJob.user;
-      const profileUserApplier = await profileRepository.getProfileByUserId(userId);
-      const jobToApply = infoUserRecvAndJob.job;
-      
-      // We don't await this to make the response faster, 
-      // or we await it but catch errors to ensure resilience.
-      mail_sender(userApplier, userReceiver, profileUserApplier, jobToApply)
-        .catch(err => console.error('Failed to send application email:', err));
+    const triggerEmail = async () => {
+      try {
+        const userApplier = await userRepository.getUserById(userId);
+        const infoUserRecvAndJob = await userJobRepository.getInformationByJobId(jobId);
+        const userReceiver = infoUserRecvAndJob.user;
+        const profileUserApplier = await profileRepository.getProfileByUserId(userId);
+        const jobToApply = infoUserRecvAndJob.job;
         
-    } catch (infoError) {
-      console.error('Failed to gather info for application email:', infoError);
-    }
+        await EmailService.sendApplicationEmail(userApplier, userReceiver, profileUserApplier, jobToApply);
+      } catch (infoError) {
+        console.error('[JobService] Failed to gather info for application email:', infoError);
+      }
+    };
+
+    triggerEmail(); // Fire and forget
 
     return { message: 'Aplicação realizada.' };
   } catch (e) {

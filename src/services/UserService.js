@@ -5,7 +5,7 @@ import profileRepository from '../repositories/ProfileRepository.js';
 import tokenRepository from '../repositories/TokenRepository.js';
 import auth from '../utils/auth.js';
 import AppError from '../utils/AppError.js';
-import { inviteMail, recoveryMail } from '../utils/emailSender.js';
+import EmailService from './EmailService.js';
 import crypto from 'crypto';
 import { env } from '../utils/env-validator.js';
 
@@ -136,7 +136,7 @@ const deleteUser = async (targetId, requestingUser) => {
 };
 
 const inviteUser = (email, requestingUser) => {
-  inviteMail(email);
+  EmailService.sendInviteEmail(email, env.SIGNUP_URL);
   return { message: 'Convite enviado.', userId: requestingUser.userId };
 };
 
@@ -152,7 +152,7 @@ const passwordRecovery = async ({ email, token, password }) => {
         random_token = crypto.randomBytes(20).toString('hex');
         await tokenRepository.createToken(user.id, random_token);
       }
-      recoveryMail(email, random_token);
+      EmailService.sendRecoveryEmail(email, env.RECOVERY_URL + random_token);
     }
     return 'OK';
   } else if (token && password) {
