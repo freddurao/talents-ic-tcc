@@ -22,6 +22,9 @@ const envSchema = Joi.object({
   // Email
   LOGIN: Joi.string().required(),
   PASSWORD: Joi.string().required(),
+  SMTP_HOST: Joi.string().default('smtp-mail.outlook.com'),
+  SMTP_PORT: Joi.number().port().default(587),
+  SMTP_SECURE: Joi.boolean().default(false),
   
   // URLs
   SIGNUP_URL: Joi.string().uri().required(),
