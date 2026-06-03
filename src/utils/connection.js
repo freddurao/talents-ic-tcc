@@ -4,7 +4,7 @@ import db from '../config/database.js';
 const connect = async () => {
   try {
     await db.authenticate();
-    await db.sync();
+    await db.sync({ alter: true });
     console.log('Database connected...');
   } catch (error) {
     console.error('Connection error:', error);

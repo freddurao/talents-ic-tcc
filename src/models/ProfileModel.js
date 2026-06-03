@@ -48,6 +48,10 @@ const Profile = db.define('profile', {
     type: DataTypes.STRING(100),
     allowNull: true,
   },
+  [ProfileAttrs.gender]: {
+    type: DataTypes.STRING(30),
+    allowNull: true,
+  },
 });
 
 //1:1 association

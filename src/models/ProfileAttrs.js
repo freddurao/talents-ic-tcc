@@ -9,6 +9,7 @@ export const ProfileAttrs = {
   searchable: 'searchable',
   github: 'github',
   city: 'city',
+  gender: 'gender',
 };
 
 
