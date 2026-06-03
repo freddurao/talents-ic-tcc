@@ -76,32 +76,8 @@ export const sendRecoveryEmail = async (email, link) => {
   return sendMail(mailOptions);
 };
 
-export const sendJobCreatedEmail = async (job, emailsList) => {
-  if (!emailsList || emailsList.length === 0) return;
-
-  const mailOptions = {
-    from: env.LOGIN,
-    bcc: emailsList, // Use BCC for privacy
-    subject: 'Nova Vaga disponível! (Talentos IC)',
-    template: 'job-created',
-    context: {
-      titulo: job.title,
-      description: job.description,
-      type: jobTypeMap[job.type] || job.type,
-      site: job.site,
-      workload: job.workload,
-      salary: job.salary,
-      scholarity: scholarityMap[job.scholarity] || job.scholarity,
-      link: env.URL_VAGA + job.id
-    }
-  };
-
-  return sendMail(mailOptions);
-};
-
 export default {
   sendApplicationEmail,
   sendInviteEmail,
-  sendRecoveryEmail,
-  sendJobCreatedEmail
+  sendRecoveryEmail
 };

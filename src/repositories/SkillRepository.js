@@ -8,7 +8,7 @@ const getAllSkills = async () => {
 const getSkillById = async (id) => {
   const skill = await prisma.skill.findUnique({
     where: {
-      id: Number(id)
+      id
     }
   });
   return skill;
@@ -35,7 +35,7 @@ const updateSkill = async (body, id) => {
     const { id: bodyId, ...skillData } = body;
     return await prisma.skill.update({
       where: {
-        id: Number(id)
+        id
       },
       data: skillData
     });
@@ -48,7 +48,7 @@ const deleteSkill = async (id) => {
   try {
     return await prisma.skill.delete({
       where: {
-        id: Number(id)
+        id
       }
     });
   } catch (error) {

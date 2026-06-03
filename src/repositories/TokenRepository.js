@@ -6,7 +6,7 @@ const createToken = async (userId, token) => {
 
   const token_object = await prisma.token.create({
     data: {
-      userId: Number(userId),
+      userId: userId,
       token: token,
       expiration: expiration
     }

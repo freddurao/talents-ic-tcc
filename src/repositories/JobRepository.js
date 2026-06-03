@@ -7,6 +7,9 @@ const getAllJobs = async (filters, itemsPerPage, pageNumber) => {
   const [jobs, count] = await prisma.$transaction([
     prisma.job.findMany({
       where: filters,
+      orderBy: {
+        createdAt: 'desc'
+      },
       take,
       skip
     }),
@@ -38,7 +41,7 @@ const getOnlyJobsToRecommend = async (lista) => {
 const getJobById = async (id) => {
   const job = await prisma.job.findUnique({
     where: {
-      id: Number(id)
+      id
     }
   });
   if (job) {
@@ -81,7 +84,7 @@ const updateJob = async (body, id) => {
 
     return await prisma.job.update({
       where: {
-        id: Number(id)
+        id
       },
       data: dataToUpdate
     });
@@ -94,7 +97,7 @@ const deleteJob = async (id) => {
   try {
     await prisma.job.delete({
       where: {
-        id: Number(id)
+        id
       }
     });
   } catch (error) {
@@ -123,7 +126,7 @@ const deleteExpiredJobs = async () => {
 
 const countValidJob = async (jobId) => {
   const job = await prisma.job.findUnique({
-    where: { id: Number(jobId) }
+    where: { id: jobId }
   });
   
   if (!job) return 0;

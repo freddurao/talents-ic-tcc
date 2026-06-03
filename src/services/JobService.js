@@ -41,7 +41,7 @@ const getJobById = async (jobId, authHeader) => {
     const token = authHeader.split(' ')[1];
     try {
       const { userId } = auth.getTokenProperties(token);
-      if (userId == jobInfo.userId) {
+      if (userId === jobInfo.userId) {
         jobInfo['recmd_profiles'] = await recommended_users_to_job(userId, jobInfo.job);
       }
     } catch (authError) {
@@ -63,19 +63,14 @@ const createJob = async (jobData, userId) => {
     throw new AppError('Falha ao realizar operação.', 500);
   }
 
-  if (jobData.emailsToSend && jobData.emailsToSend.length > 0) {
-    // Fire and forget but with internal logging in EmailService
-    EmailService.sendJobCreatedEmail(job, jobData.emailsToSend);
-  }
-
   return { message: 'Vaga criada.' };
 };
 
 const updateJob = async (jobId, jobData, user) => {
-  const { isAdmin, userId } = user;
+  const { role, userId } = user;
 
   const isOwner = await userJobRepository.countUser_JobByJobIdAndUserId(jobId, userId);
-  if (!isOwner && !isAdmin) {
+  if (!isOwner && role !== 'ADMIN') {
     throw new AppError('Acesso não autorizado.', 401);
   }
 
@@ -84,10 +79,10 @@ const updateJob = async (jobId, jobData, user) => {
 };
 
 const deleteJob = async (jobId, user) => {
-  const { isAdmin, userId } = user;
+  const { role, userId } = user;
 
   const isOwner = await userJobRepository.countUser_JobByJobIdAndUserId(jobId, userId);
-  if (!isOwner && !isAdmin) {
+  if (!isOwner && role !== 'ADMIN') {
     throw new AppError('Acesso não autorizado.', 401);
   }
 

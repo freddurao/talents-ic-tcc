@@ -3,8 +3,21 @@ import prisma from '../common/prisma/prisma.js';
 const getAllUsers = async () => {
   const [users, count] = await prisma.$transaction([
     prisma.user.findMany({
-      omit: {
-        password: true,
+      orderBy: {
+        createdAt: 'desc'
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        company: {
+          select: {
+            name: true
+          }
+        }
       }
     }),
     prisma.user.count()
@@ -14,13 +27,14 @@ const getAllUsers = async () => {
 
 const getUserById = async (id) => {
   const user = await prisma.user.findUnique({
-    where: { id: Number(id) },
+    where: { id: id },
     select: {
       id: true,
       name: true,
       email: true,
-      isAdmin: true,
-      isAuthorized: true
+      role: true,
+      isActive: true,
+      company: true
     }
   });
   return user;
@@ -34,13 +48,9 @@ const getUserByEmail = async (email) => {
 };
 
 const checkExistentEmail = async (email) => {
-  const count = await prisma.user.count({
+  return await prisma.user.count({
     where: { email }
   });
-
-  if (count > 0) {
-    throw new Error('E-mail já cadastrado.');
-  }
 };
 
 const createUser = async (body) => {
@@ -54,36 +64,15 @@ const createUser = async (body) => {
 const updateUser = async (body, id) => {
   const { secret, confirmPassword, ...userData } = body;
   return await prisma.user.update({
-    where: { id: Number(id) },
+    where: { id: id },
     data: userData
   });
 };
 
 const deleteUser = async (id) => {
-  const userId = Number(id);
-  
-  // Busca os IDs das vagas criadas por este usuário
-  const userCreatedJobs = await prisma.userJob.findMany({
-    where: {
-      userId: userId,
-      created: true
-    },
-    select: { jobId: true }
+  return await prisma.user.delete({
+    where: { id }
   });
-
-  const jobIds = userCreatedJobs.map((uj) => uj.jobId);
-
-  // Deleta as vagas e o usuário. O Prisma/DB cuidará do Cascade para Profile, Token e UserJobScore.
-  await prisma.$transaction([
-    prisma.job.deleteMany({
-      where: { id: { in: jobIds } }
-    }),
-    prisma.user.delete({
-      where: { id: userId }
-    })
-  ]);
-
-  return 1;
 };
 
 export default { getAllUsers, getUserByEmail, getUserById, checkExistentEmail, deleteUser, updateUser, createUser };

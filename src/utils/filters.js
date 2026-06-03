@@ -54,8 +54,5 @@ export const buildProfileWhereClause = (req) => {
 
 // Check if name is in req params
 export const buildUserNameWhereClause = (req) => {
-  if (req.query.name) {
-    return { name: { contains: req.query.name } };
-  }
-  return undefined;
+  return req.query.name;
 };

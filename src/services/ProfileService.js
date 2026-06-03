@@ -32,8 +32,8 @@ const getProfileById = async (profileId, requestingUser) => {
   }
 
   if (!profile.searchable) {
-    const { userId, isAdmin } = requestingUser;
-    if (profile.userId != userId && !isAdmin) {
+    const { userId, role } = requestingUser;
+    if (profile.userId !== userId && role !== 'ADMIN') {
       throw new AppError('Acesso não autorizado.', 401);
     }
   }

@@ -3,8 +3,8 @@ import prisma from '../common/prisma/prisma.js';
 const createUser_Job = async (userId, jobId, created) => {
   const user_job = await prisma.userJob.create({
     data: {
-      userId: Number(userId),
-      jobId: Number(jobId),
+      userId: userId,
+      jobId: jobId,
       created: created
     }
   });
@@ -15,7 +15,7 @@ const getJobsByUserId = async (userId, created, itemsPerPage, pageNumber) => {
   const take = itemsPerPage || undefined;
   const skip = (pageNumber - 1) * itemsPerPage || 0;
   const filter = {
-    userId: Number(userId),
+    userId: userId,
     created: created
   };
 
@@ -61,7 +61,7 @@ const getJobsByUserId = async (userId, created, itemsPerPage, pageNumber) => {
 const getInformationByJobId = async (jobId) => {
   const createdJobsByUser = await prisma.userJob.findFirst({
     where: {
-      jobId: Number(jobId),
+      jobId: jobId,
       created: true
     },
     include: {
@@ -70,8 +70,8 @@ const getInformationByJobId = async (jobId) => {
         select: {
           name: true,
           email: true,
-          isAdmin: true,
-          isAuthorized: true
+          role: true,
+          isActive: true
         }
       }
     }
@@ -100,8 +100,8 @@ const getInformationByJobId = async (jobId) => {
 const countUser_JobByJobIdAndUserId = async (jobId, userId) => {
   const count = await prisma.userJob.count({
     where: { 
-      jobId: Number(jobId), 
-      userId: Number(userId), 
+      jobId: jobId, 
+      userId: userId, 
       created: true 
     }
   });

@@ -119,7 +119,8 @@ paths:
                   type: string
                   format: date
                 userId:
-                  type: integer
+                  type: string
+                  format: uuid
                 emailsToSend:
                   type: array
                   items:
@@ -140,7 +141,8 @@ paths:
           description: Job ID
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
 
       responses:
         200:
@@ -158,7 +160,8 @@ paths:
           description: Job ID
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
 
       requestBody:
         required: true
@@ -184,7 +187,8 @@ paths:
           description: Job ID
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
 
       responses:
         204:
@@ -206,11 +210,11 @@ paths:
               type: object
               properties:
                 jobId:
-                  type: integer
-                  format: int64
+                  type: string
+                  format: uuid
                 userId:
-                  type: integer
-                  format: int64
+                  type: string
+                  format: uuid
       responses:
         201:
           description: operação realizada com sucesso
@@ -259,7 +263,8 @@ paths:
           description: User ID
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         200:
           description: busca realizada com sucesso
@@ -276,7 +281,8 @@ paths:
           description: User ID
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         204:
           description: usuário excluído com sucesso
@@ -293,7 +299,8 @@ paths:
           description: Profile ID
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
 
       requestBody:
         required: true
@@ -320,7 +327,8 @@ paths:
           description: User ID
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         200:
           description: busca realizada com sucesso
@@ -338,7 +346,8 @@ paths:
           description: User ID
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         200:
           description: busca realizada com sucesso
@@ -444,8 +453,8 @@ paths:
                 searchable:
                   type: boolean
                 userId:
-                  type: integer
-                  format: int64
+                  type: string
+                  format: uuid
 
       responses:
         201:
@@ -464,7 +473,8 @@ paths:
           description: Profile ID
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         204:
           description: perfil excluído com sucesso
@@ -481,7 +491,8 @@ paths:
           description: Profile ID
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         200:
           description: busca realizada com sucesso
@@ -498,7 +509,8 @@ paths:
           description: Profile ID
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
 
       requestBody:
         required: true
@@ -506,7 +518,7 @@ paths:
           application/json:
             schema:
               type: object
-              example: { 'scholarity': 'Superior Incompleto', 'userId': 11 }
+              example: { 'scholarity': 'Superior Incompleto', 'userId': 'uuid' }
 
       responses:
         204:
@@ -553,7 +565,8 @@ paths:
           description: Skill ID
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         200:
           description: busca realizada com sucesso
@@ -568,7 +581,8 @@ paths:
           description: Skill ID
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         204:
           description: habilidade excluída com sucesso
@@ -583,7 +597,8 @@ paths:
           description: Skill ID
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
 
       requestBody:
         required: true
@@ -637,7 +652,8 @@ paths:
           description: Technology ID
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         200:
           description: busca realizada com sucesso
@@ -652,7 +668,8 @@ paths:
           description: Technology ID
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         204:
           description: tecnologia excluída com sucesso
@@ -667,7 +684,8 @@ paths:
           description: Technology ID
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
 
       requestBody:
         required: true
@@ -679,140 +697,6 @@ paths:
       responses:
         204:
           description: tecnologias atualizadas
-
-  /email-list:
-    get:
-      tags:
-        - Lista de emails
-      summary: Buscar todas as listas
-      security:
-        - bearerAuth: []
-
-      responses:
-        200:
-          description: busca realizada com sucesso
-
-    post:
-      tags:
-        - Lista de emails
-      summary: Criar lista de emails
-      security:
-        - bearerAuth: []
-
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: object
-                properties:
-                  email:
-                    type: string
-                  isActive:
-                    type: boolean
-      responses:
-        201:
-          description: lista de email criada
-
-    patch:
-      tags:
-        - Lista de emails
-      summary: Atualização de status das listas.
-      security:
-        - bearerAuth: []
-
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              properties:
-                state:
-                  type: boolean
-
-      responses:
-        200:
-          description: status das listas atualizado
-
-  /email-list/{id}:
-    get:
-      tags:
-        - Lista de emails
-      summary: Buscar listas por identificador
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          description: Lista ID
-          required: true
-          schema:
-            type: integer
-
-      responses:
-        200:
-          description: busca realizada com sucesso
-
-    patch:
-      tags:
-        - Lista de emails
-      summary: Atualização de lista de emails
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          description: Lista ID
-          required: true
-          schema:
-            type: integer
-
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                isActive:
-                  type: boolean
-      responses:
-        200:
-          description: lista de emails atualizada
-
-  /email-list/{ids}:
-    delete:
-      tags:
-        - Lista de emails
-      summary: Deleção de listas de emails
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          description: Lista ID
-          required: true
-          schema:
-            type: array
-
-      responses:
-        200:
-          description: listas deletadas com sucesso
-
-  /email-list/verificacao:
-    get:
-      tags:
-        - Lista de emails
-      summary: Verificação de listas de emails
-      parameters:
-
-      responses:
-        200:
-          description: listas deletadas com sucesso
 
 components:
   securitySchemes:

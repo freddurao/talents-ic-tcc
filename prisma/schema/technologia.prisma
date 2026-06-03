@@ -1,6 +1,0 @@
-model Technology {
-  id          Int    @id @default(autoincrement())
-  description String //@db.VarChar(60)
-
-  @@map("technologies")
-}

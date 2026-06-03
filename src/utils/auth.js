@@ -1,10 +1,9 @@
 import jwt from 'jsonwebtoken';
 import { env } from './env-validator.js';
 
-//Create token for user request validation
-const createToken = (id, isAdmin) => {
+const createToken = (id, role, name) => {
   try {
-    const token = jwt.sign({ userId: id, isAdmin: isAdmin }, env.SECRET, {
+    const token = jwt.sign({ userId: id, role: role, name: name }, env.SECRET, {
       expiresIn: 7200 // expires in 2h
     });
     return token;
@@ -17,7 +16,10 @@ const createToken = (id, isAdmin) => {
 const getTokenProperties = (token) => {
   try {
     const decoded = jwt.verify(token, env.SECRET);
-    return { userId: decoded.userId, isAdmin: decoded.isAdmin };
+    return { 
+      userId: decoded.userId, 
+      role: decoded.role
+    };
   } catch (error) {
     error.message = 'Acesso não autorizado.';
     error.auth = true;
