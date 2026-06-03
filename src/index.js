@@ -10,7 +10,7 @@ import resumeRoutes from './routes/resumeRoutes.js';
 import User_JobScore from './models/User_JobScoreModel.js';
 import cors from 'cors';
 import connect from './utils/connection.js';
-import compression from 'express';
+import compression from 'compression';
 import helmet from 'helmet';
 import swaggerUi from 'swagger-ui-express';
 import fs from 'fs';
