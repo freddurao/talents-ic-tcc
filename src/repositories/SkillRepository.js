@@ -1,38 +1,59 @@
-import Skill from '../models/SkillModel.js';
-import { SkillAttrs } from '../models/SkillAttrs.js';
+import prisma from '../common/prisma/prisma.js';
 
 const getAllSkills = async () => {
-  const skills = await Skill.findAndCountAll();
+  const skills = await prisma.skill.findMany();
   return skills;
 };
 
 const getSkillById = async (id) => {
-  const skill = await Skill.findOne({
+  const skill = await prisma.skill.findUnique({
     where: {
-      [SkillAttrs.id]: id
+      id: Number(id)
     }
   });
   return skill;
 };
 
-const updateSkill = async (body, id) => {
-  return await Skill.update(body, {
-    where: {
-      [SkillAttrs.id]: id
-    }
+const createSkill = async (body) => {
+  const { id, ...skillData } = body;
+  const skill = await prisma.skill.create({
+    data: skillData
   });
+  return skill;
+};
+
+const createBulkSkills = async (bodies) => {
+  // Garantimos que nenhum objeto tenha 'id' se for autoincrement
+  const sanitizedBodies = bodies.map(({ id, ...rest }) => rest);
+  return await prisma.skill.createMany({
+    data: sanitizedBodies
+  });
+};
+
+const updateSkill = async (body, id) => {
+  try {
+    const { id: bodyId, ...skillData } = body;
+    return await prisma.skill.update({
+      where: {
+        id: Number(id)
+      },
+      data: skillData
+    });
+  } catch (error) {
+    throw new Error('falha na operação.');
+  }
 };
 
 const deleteSkill = async (id) => {
-  return await Skill.destroy({
-    where: {
-      [SkillAttrs.id]: id
-    }
-  });
+  try {
+    return await prisma.skill.delete({
+      where: {
+        id: Number(id)
+      }
+    });
+  } catch (error) {
+    throw new Error('falha na operação.');
+  }
 };
 
-const createBulkSkills = async (body) => {
-  return await Skill.bulkCreate(body);
-};
-
-export default { getAllSkills, getSkillById, updateSkill, deleteSkill, createBulkSkills };
+export default { getAllSkills, getSkillById, updateSkill, deleteSkill, createSkill, createBulkSkills };

@@ -79,14 +79,23 @@ $ git clone https://github.com/mate85-vagas/vagas-backend
 # Move to root directory
 $ cd vagas-backend
 
+# Build Postgres Database
+$ docker compose up -d
+
 # Install dependencies
 $ npm install
+
+# Initialize prism
+npx prisma generate
+
+# Create db tables
+npx prisma db push
 
 # Run on a local server
 $ npx nodemon src/index
 ```
 
-##### Make sure to have a MySQL database named vagas_db running and all the environment variables set.
+##### Make sure to have a PSQL database running on port 5432 and all the environment variables set.
 
 #### Running the tests
 

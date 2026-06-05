@@ -1,10 +1,8 @@
-import db from '../config/database.js';
+import prisma from "../common/prisma/prisma.js";
 
-//Authenticate with db and sync tables with models
 const connect = async () => {
   try {
-    await db.authenticate();
-    await db.sync({ alter: true });
+    await prisma.$connect();
     console.log('Database connected...');
   } catch (error) {
     console.error('Connection error:', error);

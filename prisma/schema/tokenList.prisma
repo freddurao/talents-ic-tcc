@@ -1,0 +1,10 @@
+model Token {
+  id         Int      @id @default(autoincrement())
+  expiration DateTime
+  token      String   @unique
+
+  userId Int  @unique @map("user_id")
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("tokens")
+}

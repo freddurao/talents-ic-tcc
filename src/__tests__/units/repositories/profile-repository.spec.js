@@ -1,150 +1,129 @@
-import repository from '../../../repositories/ProfileRepository';
-import Profile from '../../../models/ProfileModel';
 import { jest } from '@jest/globals';
-import factory from '../factory/profile-model-factory';
 import Chance from 'chance';
-import { ProfileAttrs } from '../../../models/ProfileAttrs';
+import factory from '../factory/profile-model-factory';
 
 const chance = new Chance();
 
+const prismaMock = {
+  profile: {
+    findUnique: jest.fn(),
+    count: jest.fn(),
+    findMany: jest.fn(),
+    update: jest.fn(),
+    create: jest.fn(),
+    delete: jest.fn(),
+  },
+  $transaction: jest.fn(),
+};
+
+jest.mock('../../../common/prisma/prisma.js', () => prismaMock);
+
+const repository = (await import('../../../repositories/ProfileRepository.js')).default;
+
 describe('Profile Context', () => {
-  it('should find a profile by id', async () => {
-    const profileModelMock = factory.createProfileModelMock(true);
-    jest.spyOn(Profile, 'findOne').mockResolvedValueOnce(Promise.resolve(profileModelMock));
-    const profile = await repository.getProfileById(profileModelMock.get('id'));
-    expect(profile).toBeDefined();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('should return empty profile object', async () => {
-    const profileModelMock = factory.createProfileModelMock(true);
-    jest.spyOn(Profile, 'findOne').mockResolvedValueOnce(Promise.resolve(null));
-    const profile = await repository.getProfileById(profileModelMock.get('id'));
-    expect(profile).toBe(null);
+  it('should find a profile by id', async () => {
+    const mock = factory.createProfileModelMock(true);
+    prismaMock.profile.findUnique.mockResolvedValueOnce(mock);
+    const result = await repository.getProfileById(mock.id);
+    expect(result).toBeDefined();
+  });
+
+  it('should return null when profile not found by id', async () => {
+    prismaMock.profile.findUnique.mockResolvedValueOnce(null);
+    const result = await repository.getProfileById(999);
+    expect(result).toBe(null);
   });
 
   it('should find a profile by userId', async () => {
-    const profileModelMock = factory.createProfileModelMock(true);
-    jest.spyOn(Profile, 'findOne').mockResolvedValueOnce(Promise.resolve(profileModelMock));
-    const profile = await repository.getProfileByUserId(profileModelMock.get('userId'));
-    expect(profile).toBeDefined();
+    const mock = factory.createProfileModelMock(true);
+    prismaMock.profile.findUnique.mockResolvedValueOnce(mock);
+    const result = await repository.getProfileByUserId(mock.userId);
+    expect(result).toBeDefined();
   });
 
-  it('should return empty profile object', async () => {
-    const profileModelMock = factory.createProfileModelMock(true);
-    jest.spyOn(Profile, 'findOne').mockResolvedValueOnce(Promise.resolve(null));
-    const profile = await repository.getProfileByUserId(profileModelMock.get('userId'));
-    expect(profile).toBe(null);
+  it('should return null when profile not found by userId', async () => {
+    prismaMock.profile.findUnique.mockResolvedValueOnce(null);
+    const result = await repository.getProfileByUserId(999);
+    expect(result).toBe(null);
   });
 
-  it('should find a profile by userId and return 1', async () => {
-    const profileModelMock = factory.createProfileModelMock(true);
-    jest.spyOn(Profile, 'count').mockResolvedValueOnce(Promise.resolve(1));
-    const count = await repository.countProfileByUserId(profileModelMock.get('userId'));
+  it('should count profiles by userId and return 1', async () => {
+    const mock = factory.createProfileModelMock(true);
+    prismaMock.profile.count.mockResolvedValueOnce(1);
+    const count = await repository.countProfileByUserId(mock.userId);
     expect(count).toBe(1);
   });
 
-  it('should not find a profile by userId and return 0', async () => {
-    const profileModelMock = factory.createProfileModelMock(true);
-    jest.spyOn(Profile, 'count').mockResolvedValueOnce(Promise.resolve(0));
-    const count = await repository.countProfileByUserId(profileModelMock.get('userId'));
+  it('should count profiles by userId and return 0', async () => {
+    prismaMock.profile.count.mockResolvedValueOnce(0);
+    const count = await repository.countProfileByUserId(999);
     expect(count).toBe(0);
   });
 
-  it('should return a object with count and rows (array of profiles) properties', async () => {
-    let max = chance.integer({ min: 1, max: 10 });
-    let mockedProfiles = [];
-    for (let i = 0; i < max; i++) {
-      mockedProfiles.push(factory.createProfileModelMock(false));
-    }
-    let mockedReturn = {
-      count: max,
-      rows: mockedProfiles
-    };
-    jest.spyOn(Profile, 'findAndCountAll').mockResolvedValueOnce(Promise.resolve(mockedReturn));
-    const filters = undefined;
+  it('should return a list of profiles with count', async () => {
+    const max = chance.integer({ min: 1, max: 10 });
+    const profiles = Array.from({ length: max }, () => factory.createProfileModelMock(false));
+    prismaMock.$transaction.mockResolvedValueOnce([profiles, max]);
     const itemsPerPage = chance.integer({ min: 1, max: 50 });
     const pageNumber = chance.integer({ min: 1, max: 10 });
-    const name = undefined;
-    const profiles = await repository.getAllProfiles(filters, itemsPerPage, pageNumber, name);
-    expect(profiles).toBeDefined();
+    const result = await repository.getAllProfiles(undefined, itemsPerPage, pageNumber, undefined);
+    expect(result).toBeDefined();
+    expect(result.rows).toHaveLength(max);
+    expect(result.count).toBe(max);
   });
 
-  it('should update the object with given id and return [1]', async () => {
-    const profileModelMock = factory.createProfileModelMock(true);
+  it('should update the profile with given id and return the updated object', async () => {
+    const mock = factory.createProfileModelMock(true);
+    prismaMock.profile.update.mockResolvedValueOnce(mock);
     const body = {
-      [ProfileAttrs.birthDate]: profileModelMock.get('birthDate'),
-      [ProfileAttrs.knowledge]: profileModelMock.get('knowledge'),
-      [ProfileAttrs.scholarity]: profileModelMock.get('scholarity'),
-      [ProfileAttrs.technologies]: profileModelMock.get('technologies'),
-      [ProfileAttrs.languages]: profileModelMock.get('languages'),
-      [ProfileAttrs.linkResume]: profileModelMock.get('linkResume'),
-      [ProfileAttrs.searchable]: profileModelMock.get('searchable'),
-      userId: profileModelMock.get('userId')
+      birthDate: mock.birthDate,
+      knowledge: mock.knowledge,
+      scholarity: mock.scholarity,
+      technologies: mock.technologies,
+      languages: mock.languages,
+      linkResume: mock.linkResume,
+      searchable: mock.searchable,
+      userId: mock.userId,
     };
-    jest.spyOn(Profile, 'update').mockResolvedValueOnce(Promise.resolve([1]));
-    const profile = await repository.updateProfile(body, profileModelMock.get('id'));
-    expect(profile).toStrictEqual([1]);
+    const result = await repository.updateProfile(body, mock.id);
+    expect(result).toBeDefined();
   });
 
-  it('should not find the object with given id and return [0]', async () => {
-    const profileModelMock = factory.createProfileModelMock(true);
+  it('should throw when update fails', async () => {
+    prismaMock.profile.update.mockRejectedValueOnce(new Error('db error'));
+    await expect(repository.updateProfile({}, 999)).rejects.toThrow('falha na operação.');
+  });
+
+  it('should create a profile and return the created object', async () => {
+    const mock = factory.createProfileModelMock(true);
+    prismaMock.profile.create.mockResolvedValueOnce(mock);
     const body = {
-      [ProfileAttrs.birthDate]: profileModelMock.get('birthDate'),
-      [ProfileAttrs.knowledge]: profileModelMock.get('knowledge'),
-      [ProfileAttrs.scholarity]: profileModelMock.get('scholarity'),
-      [ProfileAttrs.technologies]: profileModelMock.get('technologies'),
-      [ProfileAttrs.languages]: profileModelMock.get('languages'),
-      [ProfileAttrs.linkResume]: profileModelMock.get('linkResume'),
-      [ProfileAttrs.searchable]: profileModelMock.get('searchable'),
-      userId: profileModelMock.get('userId')
+      birthDate: mock.birthDate.toISOString().split('T')[0],
+      knowledge: mock.knowledge,
+      scholarity: mock.scholarity,
+      technologies: mock.technologies,
+      languages: mock.languages,
+      linkResume: mock.linkResume,
+      searchable: String(mock.searchable),
+      userId: mock.userId,
     };
-    jest.spyOn(Profile, 'update').mockResolvedValueOnce(Promise.resolve([0]));
-    const profile = await repository.updateProfile(body, profileModelMock.get('id'));
-    expect(profile).toStrictEqual([0]);
+    const result = await repository.createProfile(body);
+    expect(result).toBeDefined();
   });
 
-  it('it should create the object and return it', async () => {
-    const profileModelMock = factory.createProfileModelMock(true);
-    const body = {
-      [ProfileAttrs.birthDate]: profileModelMock.get('birthDate'),
-      [ProfileAttrs.knowledge]: profileModelMock.get('knowledge'),
-      [ProfileAttrs.scholarity]: profileModelMock.get('scholarity'),
-      [ProfileAttrs.technologies]: profileModelMock.get('technologies'),
-      [ProfileAttrs.languages]: profileModelMock.get('languages'),
-      [ProfileAttrs.linkResume]: profileModelMock.get('linkResume'),
-      [ProfileAttrs.searchable]: profileModelMock.get('searchable'),
-      userId: profileModelMock.get('userId')
-    };
-    jest.spyOn(Profile, 'create').mockResolvedValueOnce(Promise.resolve(profileModelMock));
-    const profile = await repository.createProfile(body);
-    expect(profile).toBeDefined();
+  it('should delete the profile with given id and return the deleted object', async () => {
+    const mock = factory.createProfileModelMock(true);
+    prismaMock.profile.delete.mockResolvedValueOnce(mock);
+    const result = await repository.deleteProfile(mock.id);
+    expect(result).toBeDefined();
   });
 
-  it('it should fail to create the object and return null', async () => {
-    const profileModelMock = factory.createProfileModelMock(true);
-    const body = {
-      [ProfileAttrs.birthDate]: profileModelMock.get('birthDate'),
-      [ProfileAttrs.languages]: profileModelMock.get('languages'),
-      [ProfileAttrs.linkResume]: profileModelMock.get('linkResume'),
-      [ProfileAttrs.searchable]: profileModelMock.get('searchable'),
-      userId: profileModelMock.get('userId')
-    };
-    jest.spyOn(Profile, 'create').mockResolvedValueOnce(Promise.resolve(null));
-    const profile = await repository.createProfile(body);
-    expect(profile).toBe(null);
-  });
-
-  it('should delete the object with given id and return [1]', async () => {
-    const profileModelMock = factory.createProfileModelMock(true);
-    jest.spyOn(Profile, 'destroy').mockResolvedValueOnce(Promise.resolve([1]));
-    const profile = await repository.deleteProfile(profileModelMock.get('id'));
-    expect(profile).toStrictEqual([1]);
-  });
-
-  it('should not find the object with given id and return [0]', async () => {
-    const profileModelMock = factory.createProfileModelMock(true);
-    jest.spyOn(Profile, 'destroy').mockResolvedValueOnce(Promise.resolve([0]));
-    const profile = await repository.deleteProfile(profileModelMock.get('id'));
-    expect(profile).toStrictEqual([0]);
+  it('should throw when delete fails', async () => {
+    prismaMock.profile.delete.mockRejectedValueOnce(new Error('db error'));
+    await expect(repository.deleteProfile(999)).rejects.toThrow('falha na operação.');
   });
 });

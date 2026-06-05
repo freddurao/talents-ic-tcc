@@ -1,109 +1,65 @@
-import repository from '../repositories/ProfileRepository.js';
-import auth from '../utils/auth.js';
+import ProfileService from '../services/ProfileService.js';
 import { buildProfileWhereClause, buildUserNameWhereClause } from '../utils/filters.js';
-import { recommended_vacancy } from '../utils/vacancyRecommendation.js';
-import JobRepository from '../repositories/JobRepository.js';
+
 //Get all searchable profiles
-export const getAllProfiles = async (req, res) => {
+export const getAllProfiles = async (req, res, next) => {
   try {
     const pageNumber = parseInt(req.query.pageNumber);
     const itemsPerPage = parseInt(req.query.itemsPerPage);
     const filters = buildProfileWhereClause(req);
     const name = buildUserNameWhereClause(req);
-    const profiles = await repository.getAllProfiles(filters, itemsPerPage, pageNumber, name);
-    res.json(profiles);
+    const profiles = await ProfileService.getAllProfiles(filters, itemsPerPage, pageNumber, name);
+    res.status(200).json(profiles);
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    next(error);
   }
 };
 
-export const getProfileById = async (req, res) => {
+export const getProfileById = async (req, res, next) => {
   try {
-    const profile = await repository.getProfileById(req.params.id);
-    if (profile) {
-      if (profile.searchable) res.json(profile);
-      else {
-        const { userId } = auth.getTokenProperties(req.headers['x-access-token']);
-        if (profile.userId == userId) res.json(profile);
-        else throw new Error('Acesso não autorizado.');
-      }
-    } else res.json({ message: 'Perfil não encontrado.', error: true });
+    const profile = await ProfileService.getProfileById(req.params.id, req.user);
+    res.status(200).json(profile);
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    next(error);
   }
 };
 
-export const getOwnPerfil = async (req, res) => {
+export const getOwnPerfil = async (req, res, next) => {
   try {
-    const { userId } = auth.getTokenProperties(req.headers['x-access-token']);
-    const profile = await repository.getProfileByUserId(req.params.id);
-    if (profile) {
-      if (profile.userId == userId){
-        let bestJobs = []
-        const vagas = await recommended_vacancy(userId, profile.dataValues);
-        if (vagas){
-          bestJobs = await Promise.all(vagas.map(async (i) => await JobRepository.getJobById(i.id)));
-        }
-        res.json(bestJobs);
-      }
-    } else res.json({ message: 'Acesso não autorizado.', error: true });
+    const { userId } = req.user;
+    const bestJobs = await ProfileService.getOwnPerfil(userId);
+    res.status(200).json(bestJobs);
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    next(error);
   }
 };
 
-export const updateProfile = async (req, res) => {
+export const updateProfile = async (req, res, next) => {
   try {
-    const userId = req.body.userId;
-    const profile = await repository.getProfileById(req.params.id);
-    if (profile) {
-      if (profile.userId == userId) {
-        auth.checkToken(userId, req.headers['x-access-token']);
-        const result = await repository.updateProfile(req.body, req.params.id);
-        if (result[0] == 1)
-          res.json({
-            message: 'Perfil atualizado.'
-          });
-        else throw new Error('Falha ao realizar operação.');
-      } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
-    } else res.json({ message: 'Perfil não encontrado.', error: true });
+    const { userId } = req.user;
+    const result = await ProfileService.updateProfile(req.params.id, req.body, userId);
+    res.status(200).json(result);
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    next(error);
   }
 };
 
-export const createProfile = async (req, res) => {
+export const createProfile = async (req, res, next) => {
   try {
-    auth.checkToken(req.body.userId, req.headers['x-access-token']);
-    const profile = await repository.createProfile(req.body);
-    if (profile)
-      res.json({
-        message: 'Perfil criado.'
-      });
-    else throw new Error('Falha ao realizar operação.');
+    const { userId } = req.user;
+    const result = await ProfileService.createProfile(req.body, userId);
+    res.status(201).json(result);
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    next(error);
   }
 };
 
-export const deleteProfile = async (req, res) => {
+export const deleteProfile = async (req, res, next) => {
   try {
-    const { userId } = auth.getTokenProperties(req.headers['x-access-token']);
-    const profile = await repository.getProfileByUserId(userId);
-
-    if (profile.id == req.params.id) {
-      const result = await repository.deleteProfile(profile.id);
-      if (result)
-        res.json({
-          message: 'Perfil deletado.'
-        });
-      else throw new Error('Falha ao realizar operação.');
-    } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
+    const { userId } = req.user;
+    await ProfileService.deleteProfile(req.params.id, userId);
+    res.status(204).json();
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    next(error);
   }
 };

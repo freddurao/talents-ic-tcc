@@ -1,60 +1,46 @@
-import repository from '../repositories/SkillRepository.js';
+import SkillService from '../services/SkillService.js';
 
-export const getAllSkills = async (req, res) => {
+export const getAllSkills = async (req, res, next) => {
   try {
-    const skills = await repository.getAllSkills();
-    res.json(skills);
+    const skills = await SkillService.getAllSkills();
+    res.status(200).json(skills);
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    next(error);
   }
 };
 
-export const getSkillById = async (req, res) => {
+export const getSkillById = async (req, res, next) => {
   try {
-    const skillInfo = await repository.getSkillById(req.params.id);
-    if (skillInfo) res.json(skillInfo);
-    else res.json({ message: 'Habilidade não encontrada.' });
+    const skillInfo = await SkillService.getSkillById(req.params.id);
+    res.status(200).json(skillInfo);
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    next(error);
   }
 };
 
-export const updateSkill = async (req, res) => {
+export const updateSkill = async (req, res, next) => {
   try {
-    const skillId = req.params.id;
-    const result = await repository.updateSkill(req.body, skillId);
-    if (result[0] == 1) {
-      res.json({
-        message: 'Habilidade atualizada.'
-      });
-    } else throw new Error('Falha ao realizar operação.');
+    const result = await SkillService.updateSkill(req.params.id, req.body);
+    res.status(200).json(result);
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    next(error);
   }
 };
 
-export const deleteSkill = async (req, res) => {
+export const deleteSkill = async (req, res, next) => {
   try {
-    const result = await repository.deleteSkill(req.params.id);
-    if (result)
-      res.json({
-        message: 'Habilidade deletada.'
-      });
-    else throw new Error('Falha ao realizar operação.');
+    await SkillService.deleteSkill(req.params.id);
+    res.status(204).json();
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    next(error);
   }
 };
 
-export const createBulkSkills = async (req, res) => {
+export const createBulkSkills = async (req, res, next) => {
   try {
-    const skills = await repository.createBulkSkills(req.body);
-    if (skills.length > 0)
-      res.json({
-        message: 'Habilidades criadas.'
-      });
-    else throw new Error('Falha ao realizar operação.');
+    const result = await SkillService.createBulkSkills(req.body);
+    res.status(201).json(result);
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    next(error);
   }
 };

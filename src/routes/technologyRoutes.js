@@ -6,14 +6,16 @@ import {
   deleteTechnology,
   createBulkTechnologies
 } from '../controllers/Technologies.js';
+import authMiddleware from '../middlewares/authMiddleware.js';
+import adminMiddleware from '../middlewares/adminMiddleware.js';
 
 const router = express.Router();
 
 //Routes for Technologies
 router.get('/', getAllTechnologies);
 router.get('/:id', getTechnologyById);
-router.post('/', createBulkTechnologies);
-router.patch('/:id', updateTechnology);
-router.delete('/:id', deleteTechnology);
+router.post('/', authMiddleware, adminMiddleware, createBulkTechnologies);
+router.patch('/:id', authMiddleware, adminMiddleware, updateTechnology);
+router.delete('/:id', authMiddleware, adminMiddleware, deleteTechnology);
 
 export default router;

@@ -1,47 +1,45 @@
-import Token from '../models/TokenModel.js';
-import { Sequelize } from 'sequelize';
-import { TokenAttrs } from '../models/TokenAttrs.js';
-const { Op } = Sequelize;
+import prisma from '../common/prisma/prisma.js';
 
 const createToken = async (userId, token) => {
-  const token_object = await Token.create({
-    userId: userId,
-    [TokenAttrs.token]: token,
-    [TokenAttrs.expiration]: Sequelize.fn(
-      'DATE_ADD',
-      Sequelize.literal('NOW()'),
-      Sequelize.literal('INTERVAL 15 MINUTE')
-    )
+  const expiration = new Date();
+  expiration.setMinutes(expiration.getMinutes() + 15);
+
+  const token_object = await prisma.token.create({
+    data: {
+      userId: Number(userId),
+      token: token,
+      expiration: expiration
+    }
   });
   return token_object;
 };
 
 const checkToken = async (token) => {
-  const token_object = await Token.findOne({
+  const token_object = await prisma.token.findFirst({
     where: {
-      [TokenAttrs.token]: token,
-      [TokenAttrs.expiration]: { [Op.gt]: Sequelize.literal('NOW()') }
+      token: token,
+      expiration: { gt: new Date() }
     }
   });
   return token_object;
 };
 
 const deleteExpiredTokens = async () => {
-  const result = await Token.destroy({
+  const result = await prisma.token.deleteMany({
     where: {
-      [TokenAttrs.expiration]: { [Op.lt]: Sequelize.literal('NOW()') }
+      expiration: { lt: new Date() }
     }
   });
-  return result;
+  return result.count;
 };
 
 const deleteToken = async (token) => {
-  const result = await Token.destroy({
+  const result = await prisma.token.deleteMany({
     where: {
-      [TokenAttrs.token]: token
+      token: token
     }
   });
-  return result;
+  return result.count;
 };
 
 export default { createToken, deleteExpiredTokens, checkToken, deleteToken };

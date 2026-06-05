@@ -1,0 +1,18 @@
+model Job {
+  id           Int      @id @default(autoincrement())
+  description  String   //@db.Text
+  scholarity   String   //@db.VarChar(30)
+  title        String   //@db.VarChar(60)
+  type         String   //@db.VarChar(12)
+  site         String   //@db.VarChar(30)
+  workload     Float
+  salary       Float
+  startingDate DateTime @map("starting_date") //@db.Date 
+  endingDate   DateTime @map("ending_date") //@db.Date
+  createdAt    DateTime @map("created_at") //@default(now()) @db.Date
+
+  userJobs     UserJob[]
+  userJobScore UserJobScore[]
+
+  @@map("jobs")
+}

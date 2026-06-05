@@ -1,0 +1,22 @@
+<div class="text" style="box-sizing: border-box; padding: 1% 7% 5% 7%;">
+  <div style="font-weight: 600; font-size: 20px; margin-bottom: 60px;">Olá, {{userReceiver.name}}!</div>
+  <p style="box-sizing: border-box; margin: 0 0 1.6em 0">
+    O usuário de nome <b>{{userApplier.name}}</b> aplicou para a vaga intitulada <b>{{jobToApply.title}}</b>.
+  </p>
+
+  <p style="box-sizing: border-box; margin: 30px 0 15px 0;">
+    Abaixo estão algumas informações sobre o usuário que podem ser úteis:
+  </p>
+  <ul style="list-style: circle;">
+    <li style="box-sizing: border-box; margin: 13px 0;"><b>Habilidades: </b>{{knowledge}}</li>
+    <li style="box-sizing: border-box; margin: 13px 0;"><b>Escolaridade: </b>{{scholarity}}</li>
+    <li style="box-sizing: border-box; margin: 13px 0;"><b>Tecnologias: </b>{{technologies}}</li>
+    <li style="box-sizing: border-box; margin: 13px 0;"><b>Idiomas: </b>{{languages}}</li>
+    <li style="box-sizing: border-box; margin: 13px 0;"><b>E-mail para contato: </b><a style="color: #222" href="mailto:{{userApplier.email}}">{{userApplier.email}}</a></li>
+    <li style="box-sizing: border-box; margin: 13px 0;"><b>Currículo online: </b>{{resume}}</li>
+  </ul>
+
+  <p style="margin-top: 50px;">
+    Para entrar em contato com o aplicante, <a style="color: #222" href="mailto:{{userApplier.email}}"> clique aqui.</a>
+  </p>
+</div>

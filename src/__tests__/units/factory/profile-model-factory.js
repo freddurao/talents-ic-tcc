@@ -1,32 +1,33 @@
-import Profile from '../../../models/ProfileModel.js';
-import User from '../../../models/UserModel.js';
 import Chance from 'chance';
 
 const chance = new Chance();
 
 const createProfileModelMock = (basic) => {
-  const profileModelMock = new Profile();
+  const profile = {
+    id: chance.integer({ min: 1 }),
+    birthDate: chance.date(),
+    scholarity: chance.string({ max: 30 }),
+    knowledge: chance.string(),
+    technologies: chance.string(),
+    languages: chance.string({ max: 255 }),
+    linkResume: chance.string({ max: 255 }),
+    searchable: chance.bool(),
+    github: null,
+    city: null,
+    gender: null,
+    userId: chance.integer({ min: 1 }),
+  };
 
-  profileModelMock.set('id', chance.integer({ min: 1 }));
-  profileModelMock.set('birthDate', chance.date());
-  profileModelMock.set('scholarity', chance.string({ max: 30 }));
-  profileModelMock.set('knowledge', chance.string());
-  profileModelMock.set('technologies', chance.string());
-  profileModelMock.set('languages', chance.string({ max: 255 }));
-  profileModelMock.set('linkResume', chance.string({ max: 255 }));
-  profileModelMock.set('searchable', chance.bool());
-  profileModelMock.set('userId', chance.integer({ min: 1 }));
-
-  //Include user model to profile mock if basic is false
   if (!basic) {
-    const userModelMock = new User();
-    userModelMock.set('name', chance.string({ max: 255 }));
-    userModelMock.set('email', chance.email());
-    profileModelMock.dataValues.user = userModelMock;
-    profileModelMock._previousDataValues.user = undefined;
+    profile.user = {
+      name: chance.string({ max: 255 }),
+      email: chance.email(),
+      isAdmin: false,
+      isAuthorized: true,
+    };
   }
 
-  return profileModelMock;
+  return profile;
 };
 
 export default { createProfileModelMock };

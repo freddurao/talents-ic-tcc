@@ -1,219 +1,102 @@
-import bcrypt from 'bcrypt';
-import dotenv from 'dotenv';
-import repository from '../repositories/UserRepository.js';
-import User_JobRepository from '../repositories/User_JobRepository.js';
-import auth from '../utils/auth.js';
-import ProfileRepository from '../repositories/ProfileRepository.js';
-import { inviteMail, recoveryMail } from '../utils/emailSender.js';
-import TokenRepository from '../repositories/TokenRepository.js';
-import crypto from 'crypto';
-import { UserAttrs } from '../models/UserAttrs.js';
+import UserService from '../services/UserService.js';
 
-dotenv.config();
-
-//Check if e-mail is valid
-const checkValidEmail = (email) => {
-  const regex =
-    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  if (!regex.test(email)) throw new Error('E-mail inválido ou existente.');
-};
-
-//Check if e-mail exists in db
-const checkExistentEmail = async (email) => {
+export const getAllUsers = async (req, res, next) => {
   try {
-    const count = await repository.checkExistentEmail(email);
-    if (count) throw new Error();
+    const users = await UserService.getAllUsers();
+    res.status(200).json(users);
   } catch (error) {
-    error.message = 'E-mail inválido ou existente.';
-    throw error;
+    next(error);
   }
 };
 
-export const getAllUsers = async (req, res) => {
+export const getUserById = async (req, res, next) => {
   try {
-    const { isAdmin } = auth.getTokenProperties(req.headers['x-access-token']);
-      if (isAdmin) {
-        const users = await repository.getAllUsers();
-        res.json(users);
-      } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
-    } catch (error) {
-      res.json({ message: error.message, error: true });
-    }
-  }
-
-export const getUserById = async (req, res) => {
-  try {
-    auth.checkToken(req.params.id, req.headers['x-access-token']);
-    const user = await repository.getUserById(req.params.id);
-    if (user) {
-      const profile = await ProfileRepository.getProfileByUserId(user.id);
-      let profileId = -1;
-      if (profile) profileId = profile.id;
-      user.dataValues.profileId = profileId;
-      res.json(user);
-    } else res.json({ message: 'Usuário não encontrado.', error: true });
+    const user = await UserService.getUserById(req.params.id, req.user);
+    res.status(200).json(user);
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    next(error);
   }
 };
 
 //Get all jobs that user created
-export const getCreatedJobsByUser = async (req, res) => {
+export const getCreatedJobsByUser = async (req, res, next) => {
   try {
-    auth.checkToken(req.params.id, req.headers['x-access-token']);
     const pageNumber = parseInt(req.query.pageNumber);
     const itemsPerPage = parseInt(req.query.itemsPerPage);
-    const user_jobs = await User_JobRepository.getJobsByUserId(req.params.id, true, itemsPerPage, pageNumber);
-    res.json(user_jobs);
+    const user_jobs = await UserService.getCreatedJobsByUser(req.params.id, req.user, { pageNumber, itemsPerPage });
+    res.status(200).json(user_jobs);
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    next(error);
   }
 };
 
 //Get all jobs that user applied to
-export const getAppliedJobsByUser = async (req, res) => {
+export const getAppliedJobsByUser = async (req, res, next) => {
   try {
-    auth.checkToken(req.params.id, req.headers['x-access-token']);
     const pageNumber = parseInt(req.query.pageNumber);
     const itemsPerPage = parseInt(req.query.itemsPerPage);
-    const user_jobs = await User_JobRepository.getJobsByUserId(req.params.id, false, itemsPerPage, pageNumber);
-    res.json(user_jobs);
+    const user_jobs = await UserService.getAppliedJobsByUser(req.params.id, req.user, { pageNumber, itemsPerPage });
+    res.status(200).json(user_jobs);
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    next(error);
   }
 };
 
-export const createUser = async (req, res) => {
+export const createUser = async (req, res, next) => {
   try {
-    checkValidEmail(req.body.email);
-    await checkExistentEmail(req.body.email);
-    const salt = await bcrypt.genSalt(10);
-    req.body.password = await bcrypt.hash(req.body.password, salt);
-    if (!(req.body.isAdmin == true && req.body.secret == process.env.SECRET_ADM)) {
-      req.body.isAdmin = false;
-      req.body.isAuthorized = false;
-    } else req.body.isAuthorized = true;
-    const user = await repository.createUser(req.body);
-    const token = auth.createToken(user.id, user.isAdmin);
-    res.json({
-      id: user.id,
-      token: token
-    });
+    const result = await UserService.createUser(req.body);
+    res.status(201).json(result);
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    next(error);
   }
 };
 
-export const authenticate = async (req, res) => {
+export const authenticate = async (req, res, next) => {
   try {
-    const user = await repository.getUserByEmail(req.body.email);
-    if (user) {
-      //Compare password from req body to stored password by bcrypt compare
-      const validPassword = await bcrypt.compare(req.body.password, user.password);
-      if (validPassword) {
-        dotenv.config();
-        const token = auth.createToken(user.id, user.isAdmin);
-        res.json({
-          id: user.id,
-          token: token
-        });
-      } else {
-        res.status(401).json({ message: 'Acesso negado.', error: true });
-      }
-    } else {
-      res.status(401).json({ message: 'Acesso negado.', error: true });
-    }
+    const result = await UserService.authenticate(req.body);
+    res.status(200).json(result);
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    next(error);
   }
 };
 
-export const updateUser = async (req, res) => {
+export const updateUser = async (req, res, next) => {
   try {
-    const { isAdmin, userId } = auth.getTokenProperties(req.headers['x-access-token']);
-
-    if (req.body.email) {
-      checkValidEmail(req.body.email);
-      await checkExistentEmail(req.body.email);
-    }
-
-    if (req.body.password) {
-      const salt = await bcrypt.genSalt(10);
-      req.body.password = await bcrypt.hash(req.body.password, salt);
-    }
-
-    if (req.params.id == userId || isAdmin) {
-      await repository.updateUser(req.body, req.params.id);
-      return res.json({
-        message: 'usuário atualizado.'
-      });
-    } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
+    const result = await UserService.updateUser(req.params.id, req.body, req.user);
+    res.status(200).json(result);
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    next(error);
   }
 };
 
-export const deleteUser = async (req, res) => {
+export const deleteUser = async (req, res, next) => {
   try {
-    const { isAdmin, userId } = auth.getTokenProperties(req.headers['x-access-token']);
-
-    if (req.params.id == userId || isAdmin) {
-      await repository.deleteUser(req.params.id);
-      return res.status(204).json();
-    } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
+    await UserService.deleteUser(req.params.id, req.user);
+    res.status(204).json();
   } catch (error) {
-    if (!error.auth) res.json({ message: error.message, error: true });
-    else res.json({ message: error.message, error: true, notAuthorized: true });
+    next(error);
   }
 };
 
-export const inviteUser = async (req, res) => {
+export const inviteUser = async (req, res, next) => {
   try {
-    const { userId } = auth.getTokenProperties(req.headers['x-access-token']);
-    inviteMail(req.body.email);
-    res.json({ message: 'Convite enviado.', userId: userId });
+    const result = UserService.inviteUser(req.body.email, req.user);
+    res.status(200).json(result);
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    next(error);
   }
 };
 
 //Delete expired tokens, create new password recovery tokens and recovers password
-export const passwordRecovery = async (req, res) => {
+export const passwordRecovery = async (req, res, next) => {
   try {
-    const email = req.body.email;
-    const token = req.body.token;
-    let password = req.body.password;
-    if (email) {
-      await TokenRepository.deleteExpiredTokens();
-      const user = await repository.getUserByEmail(email);
-      if (user) {
-        let random_token = crypto.randomBytes(20).toString('hex');
-        //Try to create a unique token, if not possible try again
-        try {
-          await TokenRepository.createToken(user.dataValues.id, random_token);
-        } catch {
-          random_token = crypto.randomBytes(20).toString('hex');
-          await TokenRepository.createToken(user.dataValues.id, random_token);
-        }
-        recoveryMail(email, random_token);
-      }
-      res.sendStatus(200);
-    } else if (token && password) {
-      const received_token = await TokenRepository.checkToken(token);
-      if (received_token) {
-        const salt = await bcrypt.genSalt(10);
-        password = await bcrypt.hash(password, salt);
-        await repository.updateUser({ [UserAttrs.password]: password }, received_token.dataValues.userId);
-        await TokenRepository.deleteToken(received_token.dataValues.token);
-
+    const result = await UserService.passwordRecovery(req.body);
+    if (result === 'OK') {
         res.sendStatus(200);
-      } else throw new Error('invalid token');
-    } else res.sendStatus(400);
+    } else {
+        res.status(200).json(result);
+    }
   } catch (error) {
-    res.json({ message: error.message, error: true });
+    next(error);
   }
 };

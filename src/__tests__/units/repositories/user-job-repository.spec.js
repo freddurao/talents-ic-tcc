@@ -1,81 +1,77 @@
-import repository from '../../../repositories/User_JobRepository.js';
-import User_Job from '../../../models/User_JobModel.js';
 import { jest } from '@jest/globals';
-import factory from '../factory/user-job-model-factory.js';
 import Chance from 'chance';
+import factory from '../factory/user-job-model-factory.js';
 
 const chance = new Chance();
 
+const prismaMock = {
+  userJob: {
+    create: jest.fn(),
+    findMany: jest.fn(),
+    findFirst: jest.fn(),
+    count: jest.fn(),
+  },
+  $transaction: jest.fn(),
+};
+
+jest.mock('../../../common/prisma/prisma.js', () => prismaMock);
+
+const repository = (await import('../../../repositories/User_JobRepository.js')).default;
+
 describe('User Job Context', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('should create a user_job object and return it', async () => {
-    const user_jobModelMock = factory.createUser_JobModelMock(factory.USER_JOB);
-    jest.spyOn(User_Job, 'create').mockResolvedValueOnce(Promise.resolve(user_jobModelMock));
-    const user_job = await repository.createUser_Job(
-      user_jobModelMock.get('userId'),
-      user_jobModelMock.get('jobId'),
-      user_jobModelMock.get('createdByUser')
-    );
-    expect(user_job).toBeDefined();
+    const mock = factory.createUser_JobModelMock(factory.USER_JOB);
+    prismaMock.userJob.create.mockResolvedValueOnce(mock);
+    const result = await repository.createUser_Job(mock.userId, mock.jobId, mock.created);
+    expect(result).toBeDefined();
   });
 
-  it('should not create a user_job object and should return null', async () => {
-    const user_jobModelMock = factory.createUser_JobModelMock(factory.USER_JOB);
-    jest.spyOn(User_Job, 'create').mockResolvedValueOnce(Promise.resolve(null));
-    const user_job = await repository.createUser_Job(
-      user_jobModelMock.get('userId'),
-      user_jobModelMock.get('createdByUser')
-    );
-    expect(user_job).toBe(null);
+  it('should throw when user_job creation fails', async () => {
+    prismaMock.userJob.create.mockRejectedValueOnce(new Error('db error'));
+    await expect(repository.createUser_Job(1, 1, false)).rejects.toThrow();
   });
 
-  it('should return a object with count and rows (array of user_jobs with job object included) properties', async () => {
-    let max = chance.integer({ min: 1, max: 10 });
-    let mockedUser_Jobs = [];
-    for (let i = 0; i < max; i++) {
-      mockedUser_Jobs.push(factory.createUser_JobModelMock(factory.USER_JOB_INCLUDE_JOB));
-    }
-    let mockedReturn = {
-      count: max,
-      rows: mockedUser_Jobs
-    };
-    jest.spyOn(User_Job, 'findAndCountAll').mockResolvedValueOnce(Promise.resolve(mockedReturn));
+  it('should return a list of user_jobs with job included and count', async () => {
+    const max = chance.integer({ min: 1, max: 10 });
+    const mocks = Array.from({ length: max }, () =>
+      factory.createUser_JobModelMock(factory.USER_JOB_INCLUDE_JOB)
+    );
+    prismaMock.$transaction.mockResolvedValueOnce([mocks, max]);
     const userId = chance.integer({ min: 1 });
-    const created = chance.bool();
-    const user_jobs = await repository.getJobsByUserId(userId, created);
-    expect(user_jobs).toBeDefined();
+    const result = await repository.getJobsByUserId(userId, false);
+    expect(result).toBeDefined();
+    expect(result.rows).toHaveLength(max);
+    expect(result.count).toBe(max);
   });
 
-  it('should find a job by given Job id', async () => {
-    const user_jobModelMock = factory.createUser_JobModelMock(factory.USER_JOB_INCLUDE_JOB_AND_USER);
-    jest.spyOn(User_Job, 'findOne').mockResolvedValueOnce(Promise.resolve(user_jobModelMock));
-    const user_job = await repository.getInformationByJobId(user_jobModelMock.get('jobId'));
-    expect(user_job).toBeDefined();
+  it('should find job information by jobId', async () => {
+    const mock = factory.createUser_JobModelMock(factory.USER_JOB_INCLUDE_JOB_AND_USER);
+    prismaMock.userJob.findFirst.mockResolvedValueOnce(mock);
+    const result = await repository.getInformationByJobId(mock.jobId);
+    expect(result).toBeDefined();
   });
 
-  it('should not find a job by given Job id', async () => {
-    const user_jobModelMock = factory.createUser_JobModelMock(factory.USER_JOB_INCLUDE_JOB_AND_USER);
-    jest.spyOn(User_Job, 'findOne').mockResolvedValueOnce(Promise.resolve(null));
-    const user_job = await repository.getInformationByJobId(user_jobModelMock.get('jobId'));
-    expect(user_job).toBe(null);
+  it('should return null when jobId not found', async () => {
+    prismaMock.userJob.findFirst.mockResolvedValueOnce(null);
+    const result = await repository.getInformationByJobId(999);
+    expect(result).toBeNull();
   });
 
-  it('should find a user_job by userId and jobId, should return 1', async () => {
-    const user_jobModelMock = factory.createUser_JobModelMock(factory.USER_JOB);
-    jest.spyOn(User_Job, 'count').mockResolvedValueOnce(Promise.resolve(1));
-    const count = await repository.countUser_JobByJobIdAndUserId(
-      user_jobModelMock.get('jobId'),
-      user_jobModelMock.get('userId')
-    );
+  it('should count user_job by jobId and userId and return 1', async () => {
+    const mock = factory.createUser_JobModelMock(factory.USER_JOB);
+    prismaMock.userJob.count.mockResolvedValueOnce(1);
+    const count = await repository.countUser_JobByJobIdAndUserId(mock.jobId, mock.userId);
     expect(count).toBe(1);
   });
 
-  it('should not find a user_job by userId and jobId, should return 0', async () => {
-    const user_jobModelMock = factory.createUser_JobModelMock(factory.USER_JOB);
-    jest.spyOn(User_Job, 'count').mockResolvedValueOnce(Promise.resolve(0));
-    const count = await repository.countUser_JobByJobIdAndUserId(
-      user_jobModelMock.get('jobId'),
-      user_jobModelMock.get('userId')
-    );
+  it('should count user_job by jobId and userId and return 0', async () => {
+    const mock = factory.createUser_JobModelMock(factory.USER_JOB);
+    prismaMock.userJob.count.mockResolvedValueOnce(0);
+    const count = await repository.countUser_JobByJobIdAndUserId(mock.jobId, mock.userId);
     expect(count).toBe(0);
   });
 });
