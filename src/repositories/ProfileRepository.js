@@ -3,7 +3,7 @@ import prisma from '../common/prisma/prisma.js';
 const getProfileById = async (id) => {
   const profile = await prisma.profile.findUnique({
     where: {
-      id: Number(id)
+      id
     }
   });
   return profile;
@@ -12,7 +12,7 @@ const getProfileById = async (id) => {
 const countProfileByUserId = async (userId) => {
   const count = await prisma.profile.count({
     where: {
-      userId: Number(userId)
+      userId
     }
   });
   return count;
@@ -21,7 +21,7 @@ const countProfileByUserId = async (userId) => {
 const getProfileByUserId = async (userId) => {
   const profile = await prisma.profile.findUnique({
     where: {
-      userId: Number(userId)
+      userId
     }
   });
   return profile;
@@ -36,19 +36,27 @@ const getAllProfiles = async (filters, itemsPerPage, pageNumber, nameFilter) => 
   };
   
   if (nameFilter) {
-    whereClause.user = nameFilter;
+    whereClause.user = {
+      name: {
+        contains: nameFilter,
+        mode: 'insensitive'
+      }
+    };
   }
 
   const [profiles, count] = await prisma.$transaction([
     prisma.profile.findMany({
       where: whereClause,
+      orderBy: {
+        createdAt: 'desc'
+      },
       include: {
         user: {
           select: {
             name: true,
             email: true,
-            isAdmin: true,
-            isAuthorized: true
+            role: true,
+            isActive: true
           }
         }
       },
@@ -71,7 +79,7 @@ const updateProfile = async (body, id) => {
 
     const result = await prisma.profile.update({
       where: {
-        id: Number(id)
+        id
       },
       data: dataToUpdate
     });
@@ -86,7 +94,7 @@ const createProfile = async (body) => {
   const profile = await prisma.profile.create({
     data: {
       ...profileData,
-      userId: Number(userId),
+      userId,
       birthDate: new Date(profileData.birthDate),
       searchable: String(profileData.searchable) === 'true' || profileData.searchable === true
     }
@@ -98,7 +106,7 @@ const deleteProfile = async (id) => {
   try {
     return await prisma.profile.delete({
       where: {
-        id: Number(id)
+        id
       }
     });
   } catch (error) {

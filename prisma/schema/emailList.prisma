@@ -1,7 +1,0 @@
-model EmailList {
-  id       Int      @id @default(autoincrement())
-  email    String
-  isActive Boolean? @default(false) @map("is_active")
-
-  @@map("email_lists")
-}

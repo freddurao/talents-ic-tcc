@@ -8,7 +8,7 @@ const getAllTechnologies = async () => {
 const getTechnologyById = async (id) => {
   const technology = await prisma.technology.findUnique({
     where: {
-      id: Number(id)
+      id: id
     }
   });
   return technology;
@@ -35,7 +35,7 @@ const updateTechnology = async (body, id) => {
     const { id: bodyId, ...techData } = body;
     return await prisma.technology.update({
       where: {
-        id: Number(id)
+        id: id
       },
       data: techData
     });
@@ -48,7 +48,7 @@ const deleteTechnology = async (id) => {
   try {
     return await prisma.technology.delete({
       where: {
-        id: Number(id)
+        id: id
       }
     });
   } catch (error) {

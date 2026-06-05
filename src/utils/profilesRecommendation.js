@@ -8,7 +8,7 @@ export const recommended_users_to_job = async (userId, job) => {
     let profiles = await ProfileRepository.getAllProfiles(
         {
             userId: {
-                not: Number(userId)
+                not: userId
             },
             searchable: true
         }
@@ -33,7 +33,7 @@ export const recommended_users_to_job = async (userId, job) => {
 };
 
 const get_recommended_profiles = async (recommendation_list) => {
-    let ids_list = recommendation_list.map(element => Number(element.id));
+    let ids_list = recommendation_list.map(element => element.id);
 
     if (ids_list.length === 0) return [];
 
