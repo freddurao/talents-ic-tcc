@@ -4,8 +4,15 @@ const createToken = async (userId, token) => {
   const expiration = new Date();
   expiration.setMinutes(expiration.getMinutes() + 15);
 
-  const token_object = await prisma.token.create({
-    data: {
+  const token_object = await prisma.token.upsert({
+    where: {
+      userId: userId
+    },
+    update: {
+      token: token,
+      expiration: expiration
+    },
+    create: {
       userId: userId,
       token: token,
       expiration: expiration
@@ -15,7 +22,7 @@ const createToken = async (userId, token) => {
 };
 
 const checkToken = async (token) => {
-  const token_object = await prisma.token.findFirst({
+  const token_object = await mprisma.token.findFirst({
     where: {
       token: token,
       expiration: { gt: new Date() }

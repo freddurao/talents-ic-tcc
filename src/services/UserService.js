@@ -195,12 +195,7 @@ const passwordRecovery = async ({ email, token, password }) => {
     const user = await repository.getUserByEmail(email);
     if (user) {
       let random_token = crypto.randomBytes(20).toString('hex');
-      try {
-        await tokenRepository.createToken(user.id, random_token);
-      } catch {
-        random_token = crypto.randomBytes(20).toString('hex');
-        await tokenRepository.createToken(user.id, random_token);
-      }
+      await tokenRepository.createToken(user.id, random_token);
       EmailService.sendRecoveryEmail(email, env.RECOVERY_URL + random_token);
     }
     return 'OK';
