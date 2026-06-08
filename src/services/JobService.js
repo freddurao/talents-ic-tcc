@@ -31,9 +31,18 @@ const getAllJobs = async (filters, itemsPerPage, pageNumber) => {
 };
 
 const getJobById = async (jobId, authHeader) => {
-  const jobInfo = await userJobRepository.getInformationByJobId(jobId);
+  let jobInfo = await userJobRepository.getInformationByJobId(jobId);
   if (!jobInfo) {
-    throw new AppError('Vaga não encontrada.', 404);
+    const job = await jobRepository.getJobById(jobId);
+    if (!job) {
+      throw new AppError('Vaga não encontrada.', 404);
+    }
+    jobInfo = {
+      job,
+      user: null,
+      userId: null,
+      jobId: job.id
+    };
   }
 
   // Recommendation logic
@@ -41,7 +50,7 @@ const getJobById = async (jobId, authHeader) => {
     const token = authHeader.split(' ')[1];
     try {
       const { userId } = auth.getTokenProperties(token);
-      if (userId === jobInfo.userId) {
+      if (jobInfo.userId && userId === jobInfo.userId) {
         jobInfo['recmd_profiles'] = await recommended_users_to_job(userId, jobInfo.job);
       }
     } catch (authError) {

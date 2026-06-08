@@ -13,7 +13,7 @@ const router = express.Router();
 
 //Routes for Profiles
 router.get('/', getAllProfiles);
-router.get('/:id', authMiddleware, getProfileById);
+router.get('/:id', getProfileById);
 router.get('/meuperfil/:id', authMiddleware, getOwnPerfil)
 router.patch('/:id', authMiddleware, updateProfile);
 router.post('/', authMiddleware, createProfile);
