@@ -10,6 +10,9 @@ const getAllJobs = async (filters, itemsPerPage, pageNumber) => {
       orderBy: {
         createdAt: 'desc'
       },
+      include: {
+        company: true
+      },
       take,
       skip
     }),
@@ -42,6 +45,9 @@ const getJobById = async (id) => {
   const job = await prisma.job.findUnique({
     where: {
       id
+    },
+    include: {
+      company: true
     }
   });
   if (job) {
@@ -56,10 +62,16 @@ const createJob = async (body, userId) => {
   const { default: User_JobRepository } = await import('./User_JobRepository.js');
   
   const { emailsToSend, userId: bodyUserId, ...jobData } = body;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { companyId: true }
+  });
   
   const job = await prisma.job.create({
     data: {
       ...jobData,
+      companyId: user?.companyId || null,
       workload: parseFloat(jobData.workload),
       salary: parseFloat(jobData.salary),
       startingDate: jobData.startingDate ? new Date(jobData.startingDate + 'T12:00:00') : new Date(),

@@ -28,6 +28,7 @@ export const buildJobWhereClause = (req) => {
   }
 
   if (req.query.scholarity) content.scholarity = { contains: req.query.scholarity };
+  if (req.query.companyId) content.companyId = req.query.companyId;
   if (req.query.createdAt) content.createdAt = new Date(req.query.createdAt);
   
   // Apenas vagas que ainda não expiraram

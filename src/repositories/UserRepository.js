@@ -26,19 +26,31 @@ const getAllUsers = async () => {
 };
 
 const getUserById = async (id) => {
-  const user = await prisma.user.findUnique({
-    where: { id: id },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      isActive: true,
-      company: true
-    }
-  });
-  return user;
-};
+    const user = await prisma.user.findUnique({
+      where: { id: id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isActive: true,
+        companyId: true,
+        company: true,
+        companyRequests: {
+          select: {
+            id: true,
+            status: true,
+            company: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
+      }
+    });
+    return user;
+  };
 
 const getUserByEmail = async (email) => {
   const user = await prisma.user.findUnique({
