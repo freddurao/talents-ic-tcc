@@ -77,6 +77,7 @@ model Company {
     cnpj        String   @unique @db.VarChar(18)
     description String?  @db.Text
     website     String?  @db.VarChar(255)
+    segment     String?  @db.VarChar(100)
     createdAt   DateTime @default(now()) @map("created_at")
     updatedAt   DateTime @updatedAt @map("updated_at")
 
