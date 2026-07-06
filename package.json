@@ -5,9 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "jest --runInBand ",
-    "dev": "nodemon src/index",
-    "test:cov": "jest --runInBand --coverage"
+    "dev": "nodemon src/index"
   },
   "repository": {
     "type": "git",
@@ -43,12 +41,8 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.29.2",
-    "babel-jest": "^30.3.0",
-    "chance": "^1.1.13",
     "dotenv": "^17.4.1",
     "eslint": "^10.2.0",
-    "jest": "^30.3.0",
     "nodemon": "^3.1.14",
     "prettier": "^3.8.1",
     "prisma": "^7.8.0",
