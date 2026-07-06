@@ -1,139 +1,225 @@
-<!-- Logo -->
+# Talentos IC - Backend
 
-<h1 align="center" style="font-family: Ubuntu; font-size: 45px; color: #333; margin-bottom: 0">
-  Talentos IC - REST API
-</h1>
+Backend da aplicação **Talentos IC**, responsável pela API REST, autenticação, regras de negócio e persistência dos dados.
 
-<!-- Description -->
+---
 
-<h4 align="center">
-	UFBA - Instituto de Computação - MATE85 - 2022.1 - Grupo 3
-</h4>
+## Tecnologias
 
-<!-- Summary -->
+O projeto foi desenvolvido utilizando:
 
-<h2>Summary</h2>
+- Node.js 22
+- Express
+- PostgreSQL 15
+- Prisma ORM
+- JWT
+- Swagger
+- Docker
+- ESLint
+- Prettier
 
-- [:page_with_curl: Deployment Document](#page_with_curl-deployment-document)
-- [:computer: API Documentation](#computer-api-documentation)
-- [:rocket: Technologies](#rocket-technologies)
-- [:boom: How to run](#boom-how-to-run)
-    - [Prerequisites](#prerequisites)
-    - [Setting environment variables](#setting-environment-variables)
-    - [Running the application](#running-the-application)
-- [:sparkles: Code formatting setup](#sparkles-code-formatting-setup)
-- [:recycle: How to contribute](#recycle-how-to-contribute)
-- [:memo: License](#memo-license)
+---
 
-<a id="doc-implant"></a>
+## Documentação
 
-## :page_with_curl: Deployment Document
+### Manual de Implantação
 
-The deployment document can be found on this [link](https://docs.google.com/document/d/1-MTmP5WswbvFB25XE1YlzXn-FZ0LhCXj2cAWlHahfpg/edit?usp=sharing).
+A documentação completa de implantação encontra-se disponível na documentação oficial do projeto.
 
-<a id="doc"></a>
+### Documentação da API
 
-## :computer: API Documentation
+Após iniciar a aplicação, a documentação Swagger estará disponível nesse [link](https://docs.google.com/document/d/1IlNzT2h87PjmWpdiZwCwqP_4VFyZkq6ARqbqVcQJrlk/edit?usp=sharing).:
 
-This application is documented on [Swagger](https://swagger.io//) and can be found here: [Talentos IC - Swagger](https://vagas-ic.herokuapp.com/api-doc/v1/).
-
-<a id="tecnologias"></a>
-
-## :rocket: Technologies
-
-This application uses this following technologies:
-
-- [Express](https://expressjs.com/pt-br/)
-- [Sequelize](https://sequelize.org/)
-- [ESLint](https://eslint.org/) (Code standardization)
-- [Prettier](https://prettier.io/) (Code formatting)
-- [bcrypt](https://www.npmjs.com/package/bcrypt)
-- [MySQL2](https://www.npmjs.com/package/mysql2)
-- [Jwt](https://www.npmjs.com/package/jsonwebtoken)
-- [Cors](https://www.npmjs.com/package/cors)
-
-<a id="como-executar"></a>
-
-## :boom: How to run
-
-#### Prerequisites
-
-To run this application, you need to have it on your machine:
-
-- [NodeJS](https://nodejs.org/en/download/)
-
-
-#### Setting environment variables
-
-```sh
-# Copy .env from .env.example to setup environment variables and set them
-$ cp .env.example .env
-```
-
-#### Running the application
-
-```sh
-# Clone this repository
-$ git clone https://github.com/mate85-vagas/vagas-backend
-
-# Move to root directory
-$ cd vagas-backend
-
-# Build Postgres Database
-$ docker compose up -d
-
-# Install dependencies
-$ npm install
-
-# Initialize prism
-npx prisma generate
-
-# Create db tables
-npx prisma db push
-
-# Run on a local server
-$ npx nodemon src/index
-```
-
-##### Make sure to have a PSQL database running on port 5432 and all the environment variables set.
-
-#### Running the tests
-
-```sh
-# Searches and runs all tests
-$ npm test
+```text
+http://localhost:5001/api-doc/v1/
 ```
 
 ---
 
-<a id="code-format"></a>
+## Como executar
 
-## :sparkles: Code formatting setup
+### Pré-requisitos
 
-Download prettier and eslint plugin in vscode.
+- Docker
 
-Execute command: `ctrl + shift + P`
+---
 
-Now add on vscode configurations:
+### Clonando o repositório
+
+```bash
+git clone https://github.com/mate85-vagas/vagas-backend.git
+
+cd vagas-backend
+```
+
+---
+
+### Configurando o ambiente
+
+Crie o arquivo `.env` a partir do exemplo:
+
+```bash
+cp .env.example .env
+```
+
+Preencha as variáveis de ambiente conforme necessário.
+
+---
+
+### Executando a aplicação
+
+Com o Docker instalado, basta executar:
+
+```bash
+docker compose up --build
+```
+
+Durante a inicialização serão realizados automaticamente:
+
+- criação do banco PostgreSQL;
+- instalação das dependências;
+- geração do Prisma Client;
+- sincronização do banco utilizando `prisma db push`;
+- inicialização da API.
+
+Após a conclusão, os serviços estarão disponíveis em:
+
+| Serviço | URL |
+|---------|-----|
+| API | http://localhost:5001 |
+| Swagger | http://localhost:5001/api-doc/v1 |
+
+---
+
+### Executando localmente (sem Docker)
+
+Caso prefira executar a aplicação diretamente na máquina, será necessário possuir:
+
+#### Pré-requisitos
+
+- Node.js 22 ou superior
+- PostgreSQL 15 ou superior
+
+#### Instalação
+
+Instale as dependências:
+
+```bash
+npm install
+```
+
+Copie o arquivo de ambiente:
+
+```bash
+cp .env.example .env
+```
+
+Configure as variáveis de ambiente para apontarem para sua instância do PostgreSQL.
+
+Gere o Prisma Client:
+
+```bash
+npx prisma generate
+```
+
+Sincronize o banco de dados:
+
+```bash
+npx prisma db push
+```
+
+Inicie a aplicação:
+
+```bash
+node src/index
+```
+
+Durante o desenvolvimento, também é possível utilizar o Nodemon:
+
+```bash
+npx nodemon src/index
+```
+
+Após a inicialização, a API estará disponível em:
+
+| Serviço | URL |
+|---------|-----|
+| API | http://localhost:5000 |
+| Swagger | http://localhost:5000/api-doc/v1/ |
+
+---
+
+## Estrutura do Projeto
+
+```text
+prisma/
+└── schema.prisma
+
+src/
+├── controllers/
+├── middlewares/
+├── repositories/
+├── routes/
+├── services/
+├── utils/
+└── index.js
+```
+
+---
+
+## Testes
+
+Execute os testes com:
+
+```bash
+npm test
+```
+
+---
+
+## Padronização de Código
+
+O projeto utiliza **ESLint** e **Prettier** para padronização do código.
+
+No Visual Studio Code recomenda-se habilitar a formatação automática adicionando as seguintes configurações:
 
 ```json
-"editor.defaultFormatter": "esbenp.prettier-vscode",
-"editor.formatOnSave": true
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true
+}
 ```
 
 ---
 
-<a id="como-contribuir"></a>
+## Como contribuir
 
-## :recycle: How to contribute
+1. Faça um fork do repositório.
+2. Crie uma branch para sua funcionalidade:
 
-- Fork this repository
-- Create a branch with the name of your feature: `git checkout -b my-feature`
-- Commit your changes: `git commit -m 'feat: My new feature'`
-- Push your branch: `git push origin my-feature`
+```bash
+git checkout -b feature/minha-feature
+```
 
-<a id="licenca"></a>
+3. Realize as alterações desejadas.
+4. Faça o commit:
 
-## :memo: License
+```bash
+git commit -m "feat: descrição da funcionalidade"
+```
 
-To be defined...
+5. Envie a branch para o seu fork:
+
+```bash
+git push origin feature/minha-feature
+```
+
+6. Abra um Pull Request.
+
+---
+
+## Licença
+
+Projeto desenvolvido no âmbito da Universidade Federal da Bahia (UFBA).
+
+A definição da licença permanece pendente.
