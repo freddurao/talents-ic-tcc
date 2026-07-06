@@ -24,11 +24,11 @@ O projeto foi desenvolvido utilizando:
 
 ### Manual de Implantação
 
-A documentação completa de implantação encontra-se disponível na documentação oficial do projeto.
+A documentação completa de implantação encontra-se disponível [aqui](https://docs.google.com/document/d/1IlNzT2h87PjmWpdiZwCwqP_4VFyZkq6ARqbqVcQJrlk/edit?usp=sharing).
 
 ### Documentação da API
 
-Após iniciar a aplicação, a documentação Swagger estará disponível nesse [link](https://docs.google.com/document/d/1IlNzT2h87PjmWpdiZwCwqP_4VFyZkq6ARqbqVcQJrlk/edit?usp=sharing).:
+Após iniciar a aplicação, a documentação Swagger estará disponível em:
 
 ```text
 http://localhost:5001/api-doc/v1/
