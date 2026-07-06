@@ -164,32 +164,6 @@ src/
 ├── utils/
 └── index.js
 ```
-
----
-
-## Testes
-
-Execute os testes com:
-
-```bash
-npm test
-```
-
----
-
-## Padronização de Código
-
-O projeto utiliza **ESLint** e **Prettier** para padronização do código.
-
-No Visual Studio Code recomenda-se habilitar a formatação automática adicionando as seguintes configurações:
-
-```json
-{
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true
-}
-```
-
 ---
 
 ## Como contribuir
