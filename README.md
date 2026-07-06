@@ -49,7 +49,7 @@ http://localhost:5001/api-doc/v1/
 ```bash
 git clone https://github.com/freddurao/talents-ic-tcc
 
-cd vagas-backend
+cd talents-ic-tcc
 ```
 
 ---
