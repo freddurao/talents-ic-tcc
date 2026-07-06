@@ -47,7 +47,7 @@ http://localhost:5001/api-doc/v1/
 ### Clonando o repositório
 
 ```bash
-git clone https://github.com/mate85-vagas/vagas-backend.git
+git clone https://github.com/freddurao/talents-ic-tcc
 
 cd vagas-backend
 ```
