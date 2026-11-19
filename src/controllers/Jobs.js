@@ -6,7 +6,7 @@ export const getAllJobs = async (req, res, next) => {
   try {
     const pageNumber = parseInt(req.query.pageNumber);
     const itemsPerPage = parseInt(req.query.itemsPerPage);
-    const filters = buildJobWhereClause(req);
+    const filters = await buildJobWhereClause(req);
     const result = await JobService.getAllJobs(filters, itemsPerPage, pageNumber);
     res.status(200).json(result);
   } catch (error) {

@@ -1,14 +1,13 @@
 import ProfileService from '../services/ProfileService.js';
-import { buildProfileWhereClause, buildUserNameWhereClause } from '../utils/filters.js';
+import { buildProfileWhereClause } from '../utils/filters.js';
 
 //Get all searchable profiles
 export const getAllProfiles = async (req, res, next) => {
   try {
     const pageNumber = parseInt(req.query.pageNumber);
     const itemsPerPage = parseInt(req.query.itemsPerPage);
-    const filters = buildProfileWhereClause(req);
-    const name = buildUserNameWhereClause(req);
-    const profiles = await ProfileService.getAllProfiles(filters, itemsPerPage, pageNumber, name);
+    const filters = await buildProfileWhereClause(req);
+    const profiles = await ProfileService.getAllProfiles(filters, itemsPerPage, pageNumber);
     res.status(200).json(profiles);
   } catch (error) {
     next(error);

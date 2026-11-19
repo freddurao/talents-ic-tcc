@@ -98,7 +98,7 @@ Caso prefira executar a aplicação diretamente na máquina, será necessário p
 #### Pré-requisitos
 
 - Node.js 22 ou superior
-- PostgreSQL 15 ou superior
+- PostgreSQL 15 ou superior, com a extensão `unaccent` disponível (vem na instalação padrão). A API a ativa sozinha ao iniciar, então o usuário do banco precisa ter permissão para criar extensões.
 
 #### Instalação
 
