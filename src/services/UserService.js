@@ -209,7 +209,7 @@ const passwordRecovery = async ({ email, token, password }) => {
       await tokenRepository.deleteToken(received_token.token);
       return { message: 'Senha atualizada.' };
     }
-    throw new AppError('invalid token', 400);
+    throw new AppError('Link de recuperação inválido ou expirado.', 400);
   }
 
   throw new AppError('Dados incompletos.', 400);
