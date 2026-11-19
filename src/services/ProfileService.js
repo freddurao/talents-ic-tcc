@@ -31,10 +31,12 @@ const getProfileById = async (profileId, requestingUser) => {
     throw new AppError('Perfil não encontrado.', 404);
   }
 
+  // Perfil oculto da busca: só o dono e o admin podem ver. Para os demais (inclusive
+  // visitantes, sem requestingUser), responde como se não existisse.
   if (!profile.searchable) {
-    const { userId, role } = requestingUser;
+    const { userId, role } = requestingUser || {};
     if (profile.userId !== userId && role !== 'ADMIN') {
-      throw new AppError('Acesso não autorizado.', 401);
+      throw new AppError('Perfil não encontrado.', 404);
     }
   }
 
