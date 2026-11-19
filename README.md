@@ -59,7 +59,7 @@ cd talents-ic-tcc
 Crie o arquivo `.env` a partir do exemplo:
 
 ```bash
-cp .env.example .env
+cp env.example .env
 ```
 
 Preencha as variáveis de ambiente conforme necessário.
@@ -111,7 +111,7 @@ npm install
 Copie o arquivo de ambiente:
 
 ```bash
-cp .env.example .env
+cp env.example .env
 ```
 
 Configure as variáveis de ambiente para apontarem para sua instância do PostgreSQL.
@@ -168,27 +168,88 @@ src/
 
 ## Como contribuir
 
-1. Faça um fork do repositório.
-2. Crie uma branch para sua funcionalidade:
+Este fluxo vale para os dois repositórios do projeto: este (backend) e o [frontend](https://github.com/freddurao/talentos-ic-tcc-front).
+
+### Branches
+
+| Branch | Papel |
+|--------|-------|
+| `main` | Versão estável. Só recebe a `development` quando uma etapa é concluída. |
+| `development` | Branch de trabalho. Toda branch nova sai dela e volta para ela. |
+| `fix/…`, `feat/…`, `refactor/…`, `docs/…`, `chore/…` | Uma branch por correção ou funcionalidade, com nome curto em português. Exemplo: `fix/busca-ignora-maiusculas`. |
+
+Quando uma mudança envolve backend e frontend, use **o mesmo nome de branch nos dois repositórios** e cite um PR no outro.
+
+### Passo a passo
+
+1. Atualize a `development` e crie a sua branch a partir dela:
 
 ```bash
-git checkout -b feature/minha-feature
+git checkout development
+git pull
+git checkout -b fix/nome-da-correcao
 ```
 
-3. Realize as alterações desejadas.
-4. Faça o commit:
+2. Faça as alterações e teste localmente.
+3. Faça o commit seguindo o padrão abaixo e envie a branch:
 
 ```bash
-git commit -m "feat: descrição da funcionalidade"
+git push -u origin fix/nome-da-correcao
 ```
 
-5. Envie a branch para o seu fork:
+4. No GitHub, abra um Pull Request **para a `development`**. Na descrição, diga o que mudou, quais itens do backlog o PR resolve e como testar.
+5. Faça o merge com **Squash and merge**, para que cada PR vire um único commit.
+6. Atualize o status dos itens resolvidos no [backlog](#backlog).
 
-```bash
-git push origin feature/minha-feature
+### Commits
+
+Use o padrão [Conventional Commits](https://www.conventionalcommits.org/pt-br/), em português, com os IDs do backlog no fim do título:
+
+```text
+fix(busca): ignora maiúsculas nos filtros [V-02, AD-01]
+feat(empresa): lista os membros da empresa [ME-01]
+docs: atualiza o fluxo de contribuição
 ```
 
-6. Abra um Pull Request.
+Tipos mais usados: `fix` (correção), `feat` (funcionalidade nova), `refactor` (mudança interna sem alterar o comportamento), `docs` (documentação) e `chore` (configuração e manutenção).
+
+---
+
+## Backlog
+
+Os bugs, melhorias e decisões pendentes do projeto estão reunidos no documento **[Talentos IC — Backlog do tour de telas](https://claude.ai/artifact/HyLMeNa7ik7y5mxnqKWHGH)**. Ele foi montado percorrendo todas as telas da aplicação e lendo o código. Cada item tem a causa encontrada no código e uma sugestão de correção.
+
+### Nomenclatura dos IDs
+
+Cada item tem um ID no formato `PREFIXO-NÚMERO` (ex.: `V-02`). O prefixo indica a tela ou a origem do item:
+
+| Prefixo | Tela ou origem |
+|---------|----------------|
+| `H` | Home (`/`) |
+| `V` | Lista de vagas (`/vagas`) |
+| `D` | Detalhe da vaga (`/vagas/:id`) |
+| `P` | Perfis (`/perfis` e `/verperfil/:id`) |
+| `E` | Empresas (`/empresas`) |
+| `A` | Autenticação (`/login` e `/register`) |
+| `CB` | Cabeçalho e menu do avatar |
+| `MP` | Meu perfil e vagas recomendadas |
+| `MV` | Minhas vagas (`/minhasvagas`) |
+| `ED` | Editar dados (`/editardados`) |
+| `CE` | Cadastrar empresa (`/cadastrar-empresa`) |
+| `SP` | Candidato sem perfil (modal "Perfil Incompleto") |
+| `ME` | Minha empresa (`/minha-empresa`) |
+| `JF` | Formulário de vaga (`/formulariovaga`) |
+| `AD` | Painel do admin (`/gerenciarsistema`) |
+| `TD` | Testes destrutivos e casos extremos |
+| `C` | Achados da análise de código (bugs, segurança e dívida técnica) |
+
+### Campos de cada item
+
+- **Tipo:** Bug, UX / Visual, Melhoria, Segurança ou Dívida técnica.
+- **Prioridade:** Alta, Média ou Baixa.
+- **Status:** Aberto, Em andamento, Resolvido, Descartado ou A discutir. "A discutir" marca itens que precisam de uma decisão antes de serem implementados.
+
+O documento termina com a seção **"Decisões de design pendentes"**, que agrupa os itens visuais que aparecem em várias telas (paleta de cores, botões, modais etc.). Ela deve ser resolvida antes de corrigir esses itens tela a tela.
 
 ---
 
