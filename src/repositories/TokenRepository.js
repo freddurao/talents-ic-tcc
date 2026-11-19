@@ -22,7 +22,7 @@ const createToken = async (userId, token) => {
 };
 
 const checkToken = async (token) => {
-  const token_object = await mprisma.token.findFirst({
+  const token_object = await prisma.token.findFirst({
     where: {
       token: token,
       expiration: { gt: new Date() }
