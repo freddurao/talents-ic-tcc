@@ -19,8 +19,8 @@ const formatProfile = (profile) => {
   return formatted;
 };
 
-const getAllProfiles = async (filters, itemsPerPage, pageNumber, name) => {
-  const result = await profileRepository.getAllProfiles(filters, itemsPerPage, pageNumber, name);
+const getAllProfiles = async (filters, itemsPerPage, pageNumber) => {
+  const result = await profileRepository.getAllProfiles(filters, itemsPerPage, pageNumber);
   result.rows = result.rows.map(formatProfile);
   return result;
 };

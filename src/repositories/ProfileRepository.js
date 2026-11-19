@@ -27,22 +27,13 @@ const getProfileByUserId = async (userId) => {
   return profile;
 };
 
-const getAllProfiles = async (filters, itemsPerPage, pageNumber, nameFilter) => {
+const getAllProfiles = async (filters, itemsPerPage, pageNumber) => {
   const take = itemsPerPage || undefined;
   const skip = (pageNumber - 1) * itemsPerPage || 0;
 
   const whereClause = {
     ...filters
   };
-  
-  if (nameFilter) {
-    whereClause.user = {
-      name: {
-        contains: nameFilter,
-        mode: 'insensitive'
-      }
-    };
-  }
 
   const [profiles, count] = await prisma.$transaction([
     prisma.profile.findMany({
