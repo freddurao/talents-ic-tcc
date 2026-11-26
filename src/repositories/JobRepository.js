@@ -1,4 +1,8 @@
 import prisma from '../common/prisma/prisma.js';
+import { pick } from '../utils/pick.js';
+
+// Campos que o formulário de vaga pode gravar (o resto do req.body é ignorado)
+const JOB_FIELDS = ['title', 'description', 'scholarity', 'type', 'site', 'contactEmail', 'workload', 'salary', 'startingDate', 'endingDate'];
 
 const getAllJobs = async (filters, itemsPerPage, pageNumber) => {
   const take = itemsPerPage || undefined;
@@ -61,7 +65,7 @@ const getJobById = async (id) => {
 const createJob = async (body, userId) => {
   const { default: User_JobRepository } = await import('./User_JobRepository.js');
   
-  const { emailsToSend, userId: bodyUserId, ...jobData } = body;
+  const jobData = pick(body, JOB_FIELDS);
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -86,7 +90,7 @@ const createJob = async (body, userId) => {
 
 const updateJob = async (body, id) => {
   try {
-    const { emailsToSend, userId: bodyUserId, ...jobData } = body;
+    const jobData = pick(body, JOB_FIELDS);
     const dataToUpdate = { ...jobData };
 
     if (dataToUpdate.workload) dataToUpdate.workload = parseFloat(dataToUpdate.workload);

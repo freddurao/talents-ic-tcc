@@ -1,4 +1,8 @@
 import prisma from '../common/prisma/prisma.js';
+import { pick } from '../utils/pick.js';
+
+// Campos que o formulário de perfil pode gravar (o resto do req.body é ignorado)
+const PROFILE_FIELDS = ['searchable', 'birthDate', 'scholarity', 'knowledge', 'technologies', 'languages', 'linkResume'];
 
 const getProfileById = async (id) => {
   const profile = await prisma.profile.findUnique({
@@ -62,7 +66,7 @@ const getAllProfiles = async (filters, itemsPerPage, pageNumber) => {
 
 const updateProfile = async (body, id) => {
   try {
-    const { userId, ...profileData } = body;
+    const profileData = pick(body, PROFILE_FIELDS);
     const dataToUpdate = { ...profileData };
 
     if (dataToUpdate.birthDate) dataToUpdate.birthDate = new Date(dataToUpdate.birthDate);
@@ -81,7 +85,8 @@ const updateProfile = async (body, id) => {
 };
 
 const createProfile = async (body) => {
-  const { userId, ...profileData } = body;
+  const { userId } = body; // definido pelo service a partir do token, nunca pelo cliente
+  const profileData = pick(body, PROFILE_FIELDS);
   const profile = await prisma.profile.create({
     data: {
       ...profileData,
