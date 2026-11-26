@@ -73,7 +73,7 @@ const updateProfile = async (profileId, profileData, userId) => {
   }
 
   if (profile.userId != userId) {
-    throw new AppError('Acesso não autorizado.', 401);
+    throw new AppError('Acesso não autorizado.', 403);
   }
 
   const result = await profileRepository.updateProfile(profileData, profileId);
@@ -87,7 +87,7 @@ const deleteProfile = async (profileId, userId) => {
   const profile = await profileRepository.getProfileByUserId(userId);
 
   if (!profile || profile.id != profileId) {
-    throw new AppError('Acesso não autorizado.', 401);
+    throw new AppError('Acesso não autorizado.', 403);
   }
 
   const result = await profileRepository.deleteProfile(profile.id);

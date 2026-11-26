@@ -31,7 +31,7 @@ const requestCompanyAssociation = async (requestingUser, companyId) => {
 
 const listPendingRequests = async (requestingUser) => {
   if (requestingUser.role !== 'ADMIN') {
-    throw new AppError('Acesso não autorizado.', 401);
+    throw new AppError('Acesso não autorizado.', 403);
   }
   return await repository.getPendingRequests();
 };
@@ -39,14 +39,14 @@ const listPendingRequests = async (requestingUser) => {
 const listPendingAssociationRequests = async (requestingUser) => {
   const dbUser = await userRepository.getUserById(requestingUser.userId);
   if (!dbUser || !dbUser.companyId) {
-    throw new AppError('Você não pertence a nenhuma empresa.', 401);
+    throw new AppError('Você não pertence a nenhuma empresa.', 403);
   }
   return await repository.getPendingAssociationRequests(dbUser.companyId);
 };
 
 const approveRequest = async (requestId, requestingUser) => {
   if (requestingUser.role !== 'ADMIN') {
-    throw new AppError('Acesso não autorizado.', 401);
+    throw new AppError('Acesso não autorizado.', 403);
   }
   const request = await repository.getRequestById(requestId);
   if (!request) {
@@ -59,7 +59,7 @@ const approveRequest = async (requestId, requestingUser) => {
 
 const rejectRequest = async (requestId, requestingUser) => {
   if (requestingUser.role !== 'ADMIN') {
-    throw new AppError('Acesso não autorizado.', 401);
+    throw new AppError('Acesso não autorizado.', 403);
   }
   return await repository.updateRequestStatus(requestId, 'REJECTED');
 };
@@ -71,7 +71,7 @@ const approveAssociationRequest = async (requestId, requestingUser) => {
   }
   const dbUser = await userRepository.getUserById(requestingUser.userId);
   if (requestingUser.role !== 'ADMIN' && (!dbUser || dbUser.companyId !== request.companyId)) {
-    throw new AppError('Acesso não autorizado.', 401);
+    throw new AppError('Acesso não autorizado.', 403);
   }
   const result = await repository.updateRequestStatus(requestId, 'APPROVED');
   await repository.linkUserToCompany(request.userId, request.companyId);
@@ -85,7 +85,7 @@ const rejectAssociationRequest = async (requestId, requestingUser) => {
   }
   const dbUser = await userRepository.getUserById(requestingUser.userId);
   if (requestingUser.role !== 'ADMIN' && (!dbUser || dbUser.companyId !== request.companyId)) {
-    throw new AppError('Acesso não autorizado.', 401);
+    throw new AppError('Acesso não autorizado.', 403);
   }
   return await repository.updateRequestStatus(requestId, 'REJECTED');
 };

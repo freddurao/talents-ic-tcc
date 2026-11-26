@@ -32,7 +32,7 @@ const getUserById = async (targetId, requestingUser) => {
   const { userId, role } = requestingUser;
 
   if (targetId !== userId && role !== 'ADMIN') {
-    throw new AppError('Acesso não autorizado.', 401);
+    throw new AppError('Acesso não autorizado.', 403);
   }
 
   const user = await repository.getUserById(targetId);
@@ -50,7 +50,7 @@ const getCreatedJobsByUser = async (targetId, requestingUser, { pageNumber, item
   const { userId, role } = requestingUser;
 
   if (targetId !== userId && role !== 'ADMIN') {
-    throw new AppError('Acesso não autorizado.', 401);
+    throw new AppError('Acesso não autorizado.', 403);
   }
 
   return await userJobRepository.getJobsByUserId(targetId, true, itemsPerPage, pageNumber);
@@ -60,7 +60,7 @@ const getAppliedJobsByUser = async (targetId, requestingUser, { pageNumber, item
   const { userId, role } = requestingUser;
 
   if (targetId !== userId && role !== 'ADMIN') {
-    throw new AppError('Acesso não autorizado.', 401);
+    throw new AppError('Acesso não autorizado.', 403);
   }
 
   return await userJobRepository.getJobsByUserId(targetId, false, itemsPerPage, pageNumber);
@@ -127,7 +127,7 @@ const updateUser = async (targetId, userData, requestingUser) => {
   const { role, userId } = requestingUser;
 
   if (targetId !== userId && role !== 'ADMIN') {
-    throw new AppError('Acesso não autorizado.', 401);
+    throw new AppError('Acesso não autorizado.', 403);
   }
 
   const currentUser = await repository.getUserById(targetId);
@@ -152,7 +152,7 @@ const updateUser = async (targetId, userData, requestingUser) => {
   // Role change detection (Admin only can change roles)
   if (userData.role && userData.role !== currentUser.role) {
     if (role !== 'ADMIN') {
-      throw new AppError('Acesso não autorizado para alterar cargo.', 401);
+      throw new AppError('Acesso não autorizado para alterar cargo.', 403);
     }
     // Não há tela para criar admins: se o único admin tirasse o próprio cargo,
     // o sistema ficaria sem administrador.
@@ -172,7 +172,7 @@ const updateUser = async (targetId, userData, requestingUser) => {
   // Active status detection (only Admin can activate or deactivate accounts)
   if (userData.isActive !== undefined && userData.isActive !== currentUser.isActive) {
     if (role !== 'ADMIN') {
-      throw new AppError('Acesso não autorizado para alterar o status da conta.', 401);
+      throw new AppError('Acesso não autorizado para alterar o status da conta.', 403);
     }
     if (targetId === userId) {
       throw new AppError('Você não pode desativar a sua própria conta.', 400);
@@ -202,7 +202,7 @@ const deleteUser = async (targetId, requestingUser) => {
     return;
   }
 
-  throw new AppError('Acesso não autorizado.', 401);
+  throw new AppError('Acesso não autorizado.', 403);
 };
 
 const inviteUser = (email, requestingUser) => {
