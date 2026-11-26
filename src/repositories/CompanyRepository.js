@@ -1,8 +1,12 @@
 import prisma from '../common/prisma/prisma.js';
+import { pick } from '../utils/pick.js';
+
+// Campos que o formulário de empresa pode gravar (o resto do req.body é ignorado)
+const COMPANY_FIELDS = ['name', 'cnpj', 'description', 'website', 'segment'];
 
 const createCompany = async (data) => {
   return await prisma.company.create({
-    data
+    data: pick(data, COMPANY_FIELDS)
   });
 };
 

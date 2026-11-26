@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import { pick } from '../utils/pick.js';
 import repository from '../repositories/UserRepository.js';
 import userJobRepository from '../repositories/User_JobRepository.js';
 import profileRepository from '../repositories/ProfileRepository.js';
@@ -65,7 +66,10 @@ const getAppliedJobsByUser = async (targetId, requestingUser, { pageNumber, item
   return await userJobRepository.getJobsByUserId(targetId, false, itemsPerPage, pageNumber);
 };
 
-const createUser = async (userData) => {
+const createUser = async (body) => {
+  // Só os campos do formulário de cadastro: impede, por exemplo, mandar um
+  // companyId e já nascer membro de uma empresa sem aprovação.
+  const userData = pick(body, ['name', 'email', 'password']);
   checkValidEmail(userData.email);
   await checkExistentEmail(userData.email);
 
@@ -77,7 +81,7 @@ const createUser = async (userData) => {
   userData.isActive = true;
 
   // Secret check for creating ADMIN users
-  if (userData.secret === env.SECRET_ADM) {
+  if (body.secret === env.SECRET_ADM) {
     userData.role = 'ADMIN';
   }
 
