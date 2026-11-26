@@ -160,8 +160,11 @@ const updateUser = async (targetId, userData, requestingUser) => {
     updatePayload.password = hashedPassword;
   }
 
-  // Active status detection
+  // Active status detection (only Admin can activate or deactivate accounts)
   if (userData.isActive !== undefined && userData.isActive !== currentUser.isActive) {
+    if (role !== 'ADMIN') {
+      throw new AppError('Acesso não autorizado para alterar o status da conta.', 401);
+    }
     updatePayload.isActive = userData.isActive;
   }
 
