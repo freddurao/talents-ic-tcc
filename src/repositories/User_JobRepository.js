@@ -65,7 +65,8 @@ const getInformationByJobId = async (jobId) => {
       created: true
     },
     include: {
-      job: true,
+      // A empresa é usada no selo "Vaga Oficial - <empresa>" do detalhe da vaga
+      job: { include: { company: true } },
       user: {
         select: {
           name: true,
