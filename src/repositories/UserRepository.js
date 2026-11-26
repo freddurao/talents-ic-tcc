@@ -87,4 +87,14 @@ const deleteUser = async (id) => {
   });
 };
 
-export default { getAllUsers, getUserByEmail, getUserById, checkExistentEmail, deleteUser, updateUser, createUser };
+// Consultado a cada requisição autenticada, então busca só o campo necessário.
+// Usuário removido também conta como inativo.
+const isUserActive = async (id) => {
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { isActive: true }
+  });
+  return Boolean(user?.isActive);
+};
+
+export default { getAllUsers, getUserByEmail, getUserById, checkExistentEmail, deleteUser, updateUser, createUser, isUserActive };
