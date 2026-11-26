@@ -8,6 +8,15 @@ const getProfileById = async (id) => {
   const profile = await prisma.profile.findUnique({
     where: {
       id
+    },
+    // Nome e e-mail para a tela de perfil (os mesmos dados que a lista de perfis já devolve)
+    include: {
+      user: {
+        select: {
+          name: true,
+          email: true
+        }
+      }
     }
   });
   return profile;
