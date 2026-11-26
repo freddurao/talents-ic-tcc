@@ -7,6 +7,7 @@ import EmailService from './EmailService.js';
 import { recommended_users_to_job } from '../utils/profilesRecommendation.js';
 import AppError from '../utils/AppError.js';
 import auth from '../utils/auth.js';
+import { getJobDatesError } from '../utils/validation.js';
 
 const formatDate = (date) => {
   if (date instanceof Date) {
@@ -67,6 +68,11 @@ const getJobById = async (jobId, authHeader) => {
 };
 
 const createJob = async (jobData, userId) => {
+  const datesError = getJobDatesError(jobData);
+  if (datesError) {
+    throw new AppError(datesError, 400);
+  }
+
   const job = await jobRepository.createJob(jobData, userId);
   if (!job) {
     throw new AppError('Falha ao realizar operação.', 500);
@@ -81,6 +87,18 @@ const updateJob = async (jobId, jobData, user) => {
   const isOwner = await userJobRepository.countUser_JobByJobIdAndUserId(jobId, userId);
   if (!isOwner && role !== 'ADMIN') {
     throw new AppError('Acesso não autorizado.', 403);
+  }
+
+  // Se alguma data mudou, valida o período completo (a outra vem da vaga atual)
+  if (jobData.startingDate !== undefined || jobData.endingDate !== undefined) {
+    const current = await jobRepository.getJobById(jobId);
+    const datesError = getJobDatesError({
+      startingDate: jobData.startingDate ?? current?.startingDate,
+      endingDate: jobData.endingDate ?? current?.endingDate
+    });
+    if (datesError) {
+      throw new AppError(datesError, 400);
+    }
   }
 
   await jobRepository.updateJob(jobData, jobId);
