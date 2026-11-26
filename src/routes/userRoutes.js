@@ -14,13 +14,14 @@ import {
 } from '../controllers/Users.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
 import adminMiddleware from '../middlewares/adminMiddleware.js';
+import { loginLimiter, passwordRecoveryLimiter } from '../middlewares/rateLimitMiddleware.js';
 
 const router = express.Router();
 
 //Routes for User
-router.post('/login', authenticate);
+router.post('/login', loginLimiter, authenticate);
 router.post('/convite', authMiddleware, adminMiddleware, inviteUser);
-router.post('/recuperacao/senha', passwordRecovery);
+router.post('/recuperacao/senha', passwordRecoveryLimiter, passwordRecovery);
 router.get('/', authMiddleware, adminMiddleware, getAllUsers);
 router.post('/', createUser);
 router.get('/:id/vagas/criadas', authMiddleware, getCreatedJobsByUser);
