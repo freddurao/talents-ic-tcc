@@ -154,6 +154,11 @@ const updateUser = async (targetId, userData, requestingUser) => {
     if (role !== 'ADMIN') {
       throw new AppError('Acesso não autorizado para alterar cargo.', 401);
     }
+    // Não há tela para criar admins: se o único admin tirasse o próprio cargo,
+    // o sistema ficaria sem administrador.
+    if (targetId === userId) {
+      throw new AppError('Você não pode remover o seu próprio cargo de administrador.', 400);
+    }
     updatePayload.role = userData.role;
   }
 
@@ -169,6 +174,9 @@ const updateUser = async (targetId, userData, requestingUser) => {
     if (role !== 'ADMIN') {
       throw new AppError('Acesso não autorizado para alterar o status da conta.', 401);
     }
+    if (targetId === userId) {
+      throw new AppError('Você não pode desativar a sua própria conta.', 400);
+    }
     updatePayload.isActive = userData.isActive;
   }
 
@@ -183,6 +191,11 @@ const updateUser = async (targetId, userData, requestingUser) => {
 
 const deleteUser = async (targetId, requestingUser) => {
   const { role, userId } = requestingUser;
+
+  // Pelo mesmo motivo, o admin não pode excluir a própria conta
+  if (role === 'ADMIN' && targetId === userId) {
+    throw new AppError('Você não pode excluir a sua própria conta de administrador.', 400);
+  }
 
   if (role === 'ADMIN' || targetId === userId) {
     await repository.deleteUser(targetId);
