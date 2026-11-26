@@ -80,7 +80,7 @@ const updateJob = async (jobId, jobData, user) => {
 
   const isOwner = await userJobRepository.countUser_JobByJobIdAndUserId(jobId, userId);
   if (!isOwner && role !== 'ADMIN') {
-    throw new AppError('Acesso não autorizado.', 401);
+    throw new AppError('Acesso não autorizado.', 403);
   }
 
   await jobRepository.updateJob(jobData, jobId);
@@ -92,7 +92,7 @@ const deleteJob = async (jobId, user) => {
 
   const isOwner = await userJobRepository.countUser_JobByJobIdAndUserId(jobId, userId);
   if (!isOwner && role !== 'ADMIN') {
-    throw new AppError('Acesso não autorizado.', 401);
+    throw new AppError('Acesso não autorizado.', 403);
   }
 
   await jobRepository.deleteJob(jobId);
@@ -150,13 +150,13 @@ const getFeedbackStatus = async (jobId, userId) => {
   if (result && result.status) {
     return result.status;
   }
-  throw new AppError('Acesso não autorizado.', 401);
+  throw new AppError('Acesso não autorizado.', 403);
 };
 
 const updateStatusJob = async (jobId, userId, statusData) => {
   const exists = await userJobScoreRepository.getInformationByJobIdAndUserId(jobId, userId);
   if (!exists) {
-    throw new AppError('Acesso não autorizado.', 401);
+    throw new AppError('Acesso não autorizado.', 403);
   }
 
   await userJobScoreRepository.updateUser_JobScoreStatus(statusData, userId, jobId);
