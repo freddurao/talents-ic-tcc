@@ -13,14 +13,15 @@ import {
   passwordRecovery
 } from '../controllers/Users.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
+import adminMiddleware from '../middlewares/adminMiddleware.js';
 
 const router = express.Router();
 
 //Routes for User
 router.post('/login', authenticate);
-router.post('/convite', authMiddleware, inviteUser);
+router.post('/convite', authMiddleware, adminMiddleware, inviteUser);
 router.post('/recuperacao/senha', passwordRecovery);
-router.get('/', authMiddleware, getAllUsers);
+router.get('/', authMiddleware, adminMiddleware, getAllUsers);
 router.post('/', createUser);
 router.get('/:id/vagas/criadas', authMiddleware, getCreatedJobsByUser);
 router.get('/:id/vagas/aplicadas', authMiddleware, getAppliedJobsByUser);
